@@ -1,11 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity, Platform, LogBox } from 'react-native';
 import { PieChart, BarChart } from 'react-native-chart-kit';
 import { useTransactions } from '../../hooks/useTransactions';
 import { defaultExpenseCategories } from '../../constants/categories';
 import { colors } from '../../constants/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+// Suppress known react-native-chart-kit web warning
+LogBox.ignoreLogs(['Invalid DOM property `transform-origin`']);
 import { Card } from '../../components/ui/Card';
 
 const screenWidth = Dimensions.get('window').width;
