@@ -45,6 +45,7 @@ function InitialLayout() {
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="add-transaction" options={{ presentation: 'modal', title: 'Add Transaction' }} />
+      <Stack.Screen name="add-lending" options={{ presentation: 'modal', title: 'Add Lending' }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

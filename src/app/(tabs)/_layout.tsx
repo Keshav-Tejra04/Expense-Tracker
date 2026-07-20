@@ -38,6 +38,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="lendings"
+        options={{
+          title: 'Lendings',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="hand-coin-outline" color={color} size={size} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
