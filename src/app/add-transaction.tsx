@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -10,6 +11,10 @@ import { Button } from '../components/ui/Button';
 import { colors } from '../constants/colors';
 
 export default function AddTransactionScreen() {
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
+
   const { userData } = useAuth();
   const router = useRouter();
   
@@ -76,14 +81,14 @@ export default function AddTransactionScreen() {
         {/* Type Toggle */}
         <View style={styles.toggleContainer}>
           <TouchableOpacity 
-            style={[styles.toggleBtn, type === 'expense' && { backgroundColor: colors.dark.expense }]}
+            style={[styles.toggleBtn, type === 'expense' && { backgroundColor: themeColors.expense }]}
             onPress={() => { setType('expense'); setCategory(''); }}
           >
             <Text style={[styles.toggleText, type === 'expense' && styles.toggleTextActive]}>Expense</Text>
           </TouchableOpacity>
           <View style={{ width: 12 }} />
           <TouchableOpacity 
-            style={[styles.toggleBtn, type === 'income' && { backgroundColor: colors.dark.income }]}
+            style={[styles.toggleBtn, type === 'income' && { backgroundColor: themeColors.income }]}
             onPress={() => { setType('income'); setCategory(''); }}
           >
             <Text style={[styles.toggleText, type === 'income' && styles.toggleTextActive]}>Income</Text>
@@ -146,10 +151,10 @@ export default function AddTransactionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.dark.background,
+    backgroundColor: themeColors.background,
   },
   scrollContent: {
     padding: 20,
@@ -164,12 +169,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.dark.border,
+    borderColor: themeColors.border,
     alignItems: 'center',
-    backgroundColor: colors.dark.surfaceHover,
+    backgroundColor: themeColors.surfaceHover,
   },
   toggleText: {
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -182,7 +187,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
     marginTop: 20,
     marginBottom: 12,
     fontWeight: '600',
@@ -196,7 +201,7 @@ const styles = StyleSheet.create({
   categoryChip: {
     width: '31%',
     aspectRatio: 1,
-    backgroundColor: colors.dark.surface,
+    backgroundColor: themeColors.surface,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -206,7 +211,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   categoryName: {
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     fontSize: 10,
     marginTop: 8,
     textAlign: 'center',

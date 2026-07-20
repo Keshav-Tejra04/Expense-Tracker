@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { View, ViewProps, StyleSheet } from 'react-native';
 import { colors } from '../../constants/colors';
 
@@ -7,7 +8,9 @@ interface CardProps extends ViewProps {
 }
 
 export function Card({ children, variant = 'elevated', style, ...props }: CardProps) {
-  const themeColors = colors.dark;
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
   
   return (
     <View
@@ -27,7 +30,7 @@ export function Card({ children, variant = 'elevated', style, ...props }: CardPr
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   card: {
     borderRadius: 16,
     padding: 16,

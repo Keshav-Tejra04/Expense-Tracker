@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLendings } from '../../hooks/useLendings';
@@ -9,6 +10,10 @@ import { colors } from '../../constants/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function LendingsScreen() {
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
+
   const { lendings, loading } = useLendings();
   const router = useRouter();
 
@@ -29,7 +34,7 @@ export default function LendingsScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.dark.primary} />
+        <ActivityIndicator size="large" color={themeColors.primary} />
       </View>
     );
   }
@@ -39,20 +44,20 @@ export default function LendingsScreen() {
 
   const renderLendingCard = (lending: any) => {
     const isLent = lending.type === 'lent';
-    const amountColor = isLent ? colors.dark.expense : colors.dark.income; // Lent = we gave money (-), Borrowed = we got money (+)
+    const amountColor = isLent ? themeColors.expense : themeColors.income; // Lent = we gave money (-), Borrowed = we got money (+)
     
     return (
       <Card key={lending.id} style={styles.card}>
         <View style={styles.cardHeader}>
           <View style={styles.badgeContainer}>
-            <View style={[styles.badge, { backgroundColor: isLent ? `${colors.dark.expense}20` : `${colors.dark.income}20` }]}>
+            <View style={[styles.badge, { backgroundColor: isLent ? `${themeColors.expense}20` : `${themeColors.income}20` }]}>
               <Text style={[styles.badgeText, { color: amountColor }]}>
                 {isLent ? 'Lent To' : 'Borrowed From'}
               </Text>
             </View>
             {lending.status === 'settled' && (
-              <View style={[styles.badge, { backgroundColor: `${colors.dark.primary}20`, marginLeft: 8 }]}>
-                <Text style={[styles.badgeText, { color: colors.dark.primary }]}>Settled</Text>
+              <View style={[styles.badge, { backgroundColor: `${themeColors.primary}20`, marginLeft: 8 }]}>
+                <Text style={[styles.badgeText, { color: themeColors.primary }]}>Settled</Text>
               </View>
             )}
           </View>
@@ -71,7 +76,7 @@ export default function LendingsScreen() {
               style={styles.settleBtn}
               onPress={() => handleSettle(lending.id, lending.personName)}
             >
-              <MaterialCommunityIcons name="check-circle-outline" size={20} color={colors.dark.primary} />
+              <MaterialCommunityIcons name="check-circle-outline" size={20} color={themeColors.primary} />
               <Text style={styles.settleText}>Mark Settled</Text>
             </TouchableOpacity>
           )}
@@ -80,7 +85,7 @@ export default function LendingsScreen() {
             style={styles.deleteBtn}
             onPress={() => handleDelete(lending.id)}
           >
-            <MaterialCommunityIcons name="delete-outline" size={20} color={colors.dark.expense} />
+            <MaterialCommunityIcons name="delete-outline" size={20} color={themeColors.expense} />
           </TouchableOpacity>
         </View>
       </Card>
@@ -113,7 +118,7 @@ export default function LendingsScreen() {
 
       {lendings.length === 0 && (
         <View style={styles.emptyState}>
-          <MaterialCommunityIcons name="hand-coin-outline" size={64} color={colors.dark.border} />
+          <MaterialCommunityIcons name="hand-coin-outline" size={64} color={themeColors.border} />
           <Text style={styles.emptyText}>No active lendings or borrowings.</Text>
         </View>
       )}
@@ -121,10 +126,10 @@ export default function LendingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.dark.background,
+    backgroundColor: themeColors.background,
   },
   content: {
     padding: 20,
@@ -134,7 +139,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginBottom: 24,
   },
   addButton: {
@@ -143,7 +148,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginBottom: 16,
     marginTop: 8,
   },
@@ -176,17 +181,17 @@ const styles = StyleSheet.create({
   personName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginBottom: 4,
   },
   note: {
     fontSize: 14,
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
     marginBottom: 8,
   },
   date: {
     fontSize: 12,
-    color: colors.dark.textMuted,
+    color: themeColors.textMuted,
     marginBottom: 16,
   },
   actions: {
@@ -194,20 +199,20 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: colors.dark.border,
+    borderTopColor: themeColors.border,
     paddingTop: 12,
   },
   settleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 16,
-    backgroundColor: `${colors.dark.primary}10`,
+    backgroundColor: `${themeColors.primary}10`,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
   },
   settleText: {
-    color: colors.dark.primary,
+    color: themeColors.primary,
     fontWeight: 'bold',
     marginLeft: 6,
   },
@@ -220,7 +225,7 @@ const styles = StyleSheet.create({
     paddingVertical: 64,
   },
   emptyText: {
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
     marginTop: 16,
     fontSize: 16,
   },

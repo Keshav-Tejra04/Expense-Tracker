@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
@@ -6,11 +7,16 @@ import { logoutUser } from '../../lib/auth';
 import { useTransactions } from '../../hooks/useTransactions';
 import { deleteTransaction } from '../../lib/transactions';
 import { BalanceCard } from '../../components/home/BalanceCard';
+import { BudgetWidget } from '../../components/home/BudgetWidget';
 import { TransactionCard } from '../../components/transactions/TransactionCard';
 import { Button } from '../../components/ui/Button';
 import { colors } from '../../constants/colors';
 
 export default function HomeScreen() {
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
+  
   const { userData } = useAuth();
   const router = useRouter();
   
@@ -38,7 +44,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.dark.primary} />
+        <ActivityIndicator size="large" color={themeColors.primary} />
       </View>
     );
   }
@@ -53,6 +59,8 @@ export default function HomeScreen() {
       </View>
 
       <BalanceCard balance={balance} income={totalIncome} expense={totalExpense} />
+
+      <BudgetWidget />
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Recent Transactions</Text>
@@ -81,10 +89,10 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.dark.background,
+    backgroundColor: themeColors.background,
   },
   content: {
     padding: 20,
@@ -100,20 +108,20 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
     marginTop: 4,
   },
   logoutBtn: {
     padding: 8,
-    backgroundColor: colors.dark.surfaceHover,
+    backgroundColor: themeColors.surfaceHover,
     borderRadius: 8,
   },
   logoutText: {
-    color: colors.dark.expense,
+    color: themeColors.expense,
     fontWeight: '600',
   },
   sectionHeader: {
@@ -126,15 +134,15 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
   },
   transactionList: {
-    backgroundColor: colors.dark.surface,
+    backgroundColor: themeColors.surface,
     borderRadius: 16,
     padding: 16,
   },
   emptyText: {
-    color: colors.dark.textMuted,
+    color: themeColors.textMuted,
     textAlign: 'center',
     paddingVertical: 20,
   },

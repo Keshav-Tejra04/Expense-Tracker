@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { TextInput, TextInputProps, View, Text, StyleSheet } from 'react-native';
 import { colors } from '../../constants/colors';
 
@@ -8,7 +9,9 @@ interface InputProps extends TextInputProps {
 }
 
 export function Input({ label, error, style, ...props }: InputProps) {
-  const themeColors = colors.dark;
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
 
   return (
     <View style={styles.container}>
@@ -31,7 +34,7 @@ export function Input({ label, error, style, ...props }: InputProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
     marginVertical: 8,
   },

@@ -1,23 +1,31 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext';
+import { Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
 
 export default function TabLayout() {
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.dark.surface,
+          backgroundColor: themeColors.surface,
           borderTopWidth: 1,
-          borderTopColor: colors.dark.border,
-          height: 60,
-          paddingBottom: 8,
+          borderTopColor: themeColors.border,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: colors.dark.primary,
-        tabBarInactiveTintColor: colors.dark.textSecondary,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '500',
+        },
+        tabBarActiveTintColor: themeColors.primary,
+        tabBarInactiveTintColor: themeColors.textSecondary,
       }}
     >
       <Tabs.Screen
@@ -26,15 +34,6 @@ export default function TabLayout() {
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="home" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="budget"
-        options={{
-          title: 'Budget',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="wallet-outline" color={color} size={size} />
           ),
         }}
       />

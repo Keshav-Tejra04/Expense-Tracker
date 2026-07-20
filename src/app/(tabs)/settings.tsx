@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Clipboard } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useFamily } from '../../hooks/useFamily';
@@ -9,6 +10,10 @@ import { colors } from '../../constants/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function SettingsScreen() {
+  const { theme, toggleTheme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
+
   const { userData } = useAuth();
   const { family } = useFamily();
 
@@ -33,7 +38,7 @@ export default function SettingsScreen() {
       {/* User Profile */}
       <Card style={styles.card}>
         <View style={styles.cardHeader}>
-          <MaterialCommunityIcons name="account-circle-outline" size={24} color={colors.dark.primary} />
+          <MaterialCommunityIcons name="account-circle-outline" size={24} color={themeColors.primary} />
           <Text style={styles.cardTitle}>My Profile</Text>
         </View>
         <View style={styles.infoRow}>
@@ -53,7 +58,7 @@ export default function SettingsScreen() {
       {/* Family Info */}
       <Card style={styles.card}>
         <View style={styles.cardHeader}>
-          <MaterialCommunityIcons name="home-group" size={24} color={colors.dark.income} />
+          <MaterialCommunityIcons name="home-group" size={24} color={themeColors.income} />
           <Text style={styles.cardTitle}>Family Settings</Text>
         </View>
         <View style={styles.infoRow}>
@@ -67,7 +72,7 @@ export default function SettingsScreen() {
             <Text style={styles.codeValue}>{family?.code || '...'}</Text>
           </View>
           <TouchableOpacity onPress={handleCopyCode} style={styles.copyBtn}>
-            <MaterialCommunityIcons name="content-copy" size={20} color={colors.dark.primary} />
+            <MaterialCommunityIcons name="content-copy" size={20} color={themeColors.primary} />
             <Text style={styles.copyText}>Copy Code</Text>
           </TouchableOpacity>
         </View>
@@ -77,11 +82,26 @@ export default function SettingsScreen() {
           <View style={styles.membersList}>
             {family?.members?.map((member, index) => (
               <View key={index} style={styles.memberBadge}>
-                <MaterialCommunityIcons name="account" size={16} color={colors.dark.textSecondary} />
+                <MaterialCommunityIcons name="account" size={16} color={themeColors.textSecondary} />
                 <Text style={styles.memberName}>{member}</Text>
               </View>
             ))}
           </View>
+        </View>
+      </Card>
+
+      {/* App Preferences */}
+      <Card style={styles.card}>
+        <View style={styles.cardHeader}>
+          <MaterialCommunityIcons name="palette" size={24} color={themeColors.primary} />
+          <Text style={styles.cardTitle}>App Preferences</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Theme</Text>
+          <TouchableOpacity onPress={toggleTheme} style={styles.copyBtn}>
+            <MaterialCommunityIcons name={theme === 'dark' ? 'weather-night' : 'weather-sunny'} size={20} color={themeColors.primary} />
+            <Text style={styles.copyText}>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</Text>
+          </TouchableOpacity>
         </View>
       </Card>
 
@@ -97,10 +117,10 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.dark.background,
+    backgroundColor: themeColors.background,
   },
   content: {
     padding: 20,
@@ -110,7 +130,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginBottom: 24,
   },
   card: {
@@ -122,13 +142,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.dark.border,
+    borderBottomColor: themeColors.border,
     paddingBottom: 12,
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginLeft: 8,
   },
   infoRow: {
@@ -138,42 +158,42 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
   },
   infoValue: {
     fontSize: 16,
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     fontWeight: '500',
   },
   codeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.dark.background,
+    backgroundColor: themeColors.background,
     padding: 16,
     borderRadius: 8,
     marginTop: 8,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.dark.border,
+    borderColor: themeColors.border,
   },
   codeValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.dark.primary,
+    color: themeColors.primary,
     letterSpacing: 2,
     marginTop: 4,
   },
   copyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: `${colors.dark.primary}20`,
+    backgroundColor: `${themeColors.primary}20`,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
   },
   copyText: {
-    color: colors.dark.primary,
+    color: themeColors.primary,
     fontWeight: 'bold',
     marginLeft: 6,
   },
@@ -188,17 +208,17 @@ const styles = StyleSheet.create({
   memberBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.dark.surfaceHover,
+    backgroundColor: themeColors.surfaceHover,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 16,
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: colors.dark.border,
+    borderColor: themeColors.border,
   },
   memberName: {
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginLeft: 4,
     fontSize: 14,
   },
@@ -207,7 +227,7 @@ const styles = StyleSheet.create({
   },
   version: {
     textAlign: 'center',
-    color: colors.dark.textMuted,
+    color: themeColors.textMuted,
     marginTop: 24,
     fontSize: 12,
   },

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { registerUser } from '../../lib/auth';
@@ -8,6 +9,10 @@ import { Card } from '../../components/ui/Card';
 import { colors } from '../../constants/colors';
 
 export default function RegisterScreen() {
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -143,10 +148,10 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.dark.background,
+    backgroundColor: themeColors.background,
   },
   scrollContent: {
     flexGrow: 1,
@@ -160,12 +165,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
   },
   card: {
     padding: 20,
@@ -187,7 +192,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
     marginBottom: 8,
   },
 });

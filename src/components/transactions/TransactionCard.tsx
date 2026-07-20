@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Transaction } from '../../lib/transactions';
@@ -11,15 +12,19 @@ interface TransactionCardProps {
 }
 
 export function TransactionCard({ transaction, onPress }: TransactionCardProps) {
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
+
   const isExpense = transaction.type === 'expense';
-  const amountColor = isExpense ? colors.dark.expense : colors.dark.income;
+  const amountColor = isExpense ? themeColors.expense : themeColors.income;
   const prefix = isExpense ? '-' : '+';
   
   // Find category to get icon and color
   const allCategories = [...defaultExpenseCategories, ...defaultIncomeCategories];
   const categoryConfig = allCategories.find(c => c.name === transaction.category);
   const iconName = categoryConfig?.icon || 'dots-horizontal';
-  const iconColor = categoryConfig?.color || colors.dark.textSecondary;
+  const iconColor = categoryConfig?.color || themeColors.textSecondary;
 
   return (
     <TouchableOpacity onPress={onPress} disabled={!onPress}>
@@ -46,13 +51,13 @@ export function TransactionCard({ transaction, onPress }: TransactionCardProps) 
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.dark.border,
+    borderBottomColor: themeColors.border,
   },
   iconContainer: {
     width: 48,
@@ -69,12 +74,12 @@ const styles = StyleSheet.create({
   category: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginBottom: 4,
   },
   note: {
     fontSize: 13,
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
   },
   amountContainer: {
     alignItems: 'flex-end',
@@ -87,6 +92,6 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 12,
-    color: colors.dark.textMuted,
+    color: themeColors.textMuted,
   },
 });

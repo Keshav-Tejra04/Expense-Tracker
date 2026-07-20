@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { useTransactions } from '../../hooks/useTransactions';
@@ -8,6 +9,10 @@ import { colors } from '../../constants/colors';
 const screenWidth = Dimensions.get('window').width;
 
 export default function AnalyticsScreen() {
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
+
   const today = new Date();
   const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
   
@@ -29,8 +34,8 @@ export default function AnalyticsScreen() {
       return {
         name: catName,
         amount: grouped[catName],
-        color: categoryInfo?.color || colors.dark.border,
-        legendFontColor: colors.dark.textSecondary,
+        color: categoryInfo?.color || themeColors.border,
+        legendFontColor: themeColors.textSecondary,
         legendFontSize: 12
       };
     });
@@ -43,14 +48,14 @@ export default function AnalyticsScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.dark.primary} />
+        <ActivityIndicator size="large" color={themeColors.primary} />
       </View>
     );
   }
 
   const chartConfig = {
-    backgroundGradientFrom: colors.dark.surface,
-    backgroundGradientTo: colors.dark.surface,
+    backgroundGradientFrom: themeColors.surface,
+    backgroundGradientTo: themeColors.surface,
     color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
   };
 
@@ -108,10 +113,10 @@ export default function AnalyticsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.dark.background,
+    backgroundColor: themeColors.background,
   },
   content: {
     padding: 20,
@@ -121,11 +126,11 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginBottom: 24,
   },
   summaryCard: {
-    backgroundColor: colors.dark.surface,
+    backgroundColor: themeColors.surface,
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
@@ -133,16 +138,16 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
     marginBottom: 8,
   },
   summaryTotal: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: colors.dark.expense,
+    color: themeColors.expense,
   },
   chartContainer: {
-    backgroundColor: colors.dark.surface,
+    backgroundColor: themeColors.surface,
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
@@ -151,28 +156,28 @@ const styles = StyleSheet.create({
   chartTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginBottom: 16,
     alignSelf: 'flex-start',
   },
   emptyContainer: {
-    backgroundColor: colors.dark.surface,
+    backgroundColor: themeColors.surface,
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
   },
   emptyText: {
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
   },
   breakdownContainer: {
-    backgroundColor: colors.dark.surface,
+    backgroundColor: themeColors.surface,
     borderRadius: 16,
     padding: 16,
   },
   breakdownTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     marginBottom: 16,
   },
   breakdownRow: {
@@ -181,7 +186,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.dark.border,
+    borderBottomColor: themeColors.border,
   },
   breakdownLeft: {
     flexDirection: 'row',
@@ -195,7 +200,7 @@ const styles = StyleSheet.create({
   },
   breakdownCategory: {
     fontSize: 16,
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
   },
   breakdownRight: {
     alignItems: 'flex-end',
@@ -203,11 +208,11 @@ const styles = StyleSheet.create({
   breakdownAmount: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
   },
   breakdownPercent: {
     fontSize: 12,
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
     marginTop: 2,
   },
 });

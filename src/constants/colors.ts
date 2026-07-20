@@ -1,30 +1,26 @@
 export const colors = {
   dark: {
-    background: '#0A0A0F',
-    surface: '#14141F',
-    surfaceHover: '#1E1E2E',
-    border: '#2A2A3A',
-    primary: '#6C5CE7',
-    income: '#00D68F',
-    expense: '#FF6B6B',
-    lent: '#FDCB6E',
-    borrowed: '#74B9FF',
+    background: '#121212',
+    surface: '#1E1E1E',
+    surfaceHover: '#2A2A2A',
+    primary: '#8B5CF6',     // Purple
+    income: '#10B981',      // Green
+    expense: '#EF4444',     // Red
     textPrimary: '#FFFFFF',
-    textSecondary: '#8A8A9A',
-    textMuted: '#555566',
+    textSecondary: '#A1A1AA',
+    textMuted: '#52525B',
+    border: '#27272A',
   },
   light: {
-    background: '#F5F5FA',
+    background: '#F9FAFB',
     surface: '#FFFFFF',
-    surfaceHover: '#F0F0F5',
-    border: '#E8E8F0',
-    primary: '#6C5CE7',
-    income: '#00C484',
-    expense: '#FF5252',
-    lent: '#F39C12',
-    borrowed: '#0984E3',
-    textPrimary: '#1A1A2E',
-    textSecondary: '#6B6B80',
-    textMuted: '#9999A8',
+    surfaceHover: '#F3F4F6',
+    primary: '#7C3AED',     // Purple
+    income: '#059669',      // Green
+    expense: '#DC2626',     // Red
+    textPrimary: '#111827',
+    textSecondary: '#4B5563',
+    textMuted: '#9CA3AF',
+    border: '#E5E7EB',
   }
 };

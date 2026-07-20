@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +10,10 @@ import { Card } from '../components/ui/Card';
 import { colors } from '../constants/colors';
 
 export default function AddLendingScreen() {
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
+
   const { userData } = useAuth();
   const router = useRouter();
   
@@ -69,14 +74,14 @@ export default function AddLendingScreen() {
         
         <View style={styles.toggleContainer}>
           <TouchableOpacity 
-            style={[styles.toggleBtn, type === 'lent' && { backgroundColor: colors.dark.expense }]}
+            style={[styles.toggleBtn, type === 'lent' && { backgroundColor: themeColors.expense }]}
             onPress={() => setType('lent')}
           >
             <Text style={[styles.toggleText, type === 'lent' && styles.toggleTextActive]}>I Gave Money</Text>
           </TouchableOpacity>
           <View style={{ width: 12 }} />
           <TouchableOpacity 
-            style={[styles.toggleBtn, type === 'borrowed' && { backgroundColor: colors.dark.income }]}
+            style={[styles.toggleBtn, type === 'borrowed' && { backgroundColor: themeColors.income }]}
             onPress={() => setType('borrowed')}
           >
             <Text style={[styles.toggleText, type === 'borrowed' && styles.toggleTextActive]}>I Took Money</Text>
@@ -124,10 +129,10 @@ export default function AddLendingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.dark.background,
+    backgroundColor: themeColors.background,
   },
   scrollContent: {
     padding: 20,
@@ -142,12 +147,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.dark.border,
+    borderColor: themeColors.border,
     alignItems: 'center',
-    backgroundColor: colors.dark.surfaceHover,
+    backgroundColor: themeColors.surfaceHover,
   },
   toggleText: {
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
     fontWeight: 'bold',
     fontSize: 14,
   },

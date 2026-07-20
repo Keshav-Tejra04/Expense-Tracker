@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { TouchableOpacity, Text, StyleSheet, TouchableOpacityProps, ActivityIndicator } from 'react-native';
 import { colors } from '../../constants/colors';
 
@@ -9,7 +10,9 @@ interface ButtonProps extends TouchableOpacityProps {
 }
 
 export function Button({ title, variant = 'primary', isLoading, style, ...props }: ButtonProps) {
-  const themeColors = colors.dark;
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
   
   const getBackgroundColor = () => {
     switch (variant) {
@@ -48,7 +51,7 @@ export function Button({ title, variant = 'primary', isLoading, style, ...props 
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   button: {
     borderRadius: 12,
     paddingVertical: 14,

@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { useFamily } from '../../hooks/useFamily';
 import { useTransactions } from '../../hooks/useTransactions';
 import { updateFamilyBudget } from '../../lib/family';
-import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
+import { Input } from '../ui/Input';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
 import { colors } from '../../constants/colors';
 
-export default function BudgetScreen() {
+export function BudgetWidget() {
+  const { theme } = useTheme();
+  const themeColors = colors[theme];
+  const styles = getStyles(themeColors);
+
   const { family, loading: familyLoading } = useFamily();
   
   // Get current month YYYY-MM
@@ -22,11 +27,7 @@ export default function BudgetScreen() {
   const [saving, setSaving] = useState(false);
 
   if (familyLoading || txnLoading) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center' }]}>
-        <Text style={{ color: colors.dark.textSecondary, textAlign: 'center' }}>Loading...</Text>
-      </View>
-    );
+    return null;
   }
 
   const budget = family?.monthlyBudget || 0;
@@ -64,13 +65,15 @@ export default function BudgetScreen() {
 
   const progress = budget > 0 ? Math.min(spent / budget, 1) : 0;
   
-  let progressColor = colors.dark.primary;
-  if (progress > 0.8) progressColor = colors.dark.expense;
+  let progressColor = themeColors.primary;
+  if (progress > 0.8) progressColor = themeColors.expense;
   else if (progress > 0.5) progressColor = '#F59E0B'; // Orange/warning
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.header}>Monthly Budget</Text>
+    <View style={styles.container}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Monthly Budget</Text>
+      </View>
       
       {(!budget || isEditing) ? (
         <Card style={styles.setupCard}>
@@ -104,7 +107,7 @@ export default function BudgetScreen() {
       ) : (
         <Card style={styles.budgetCard}>
           <View style={styles.budgetHeader}>
-            <Text style={styles.budgetLabel}>Budget for {today.toLocaleString('default', { month: 'long' })}</Text>
+            <Text style={styles.budgetLabel}>{today.toLocaleString('default', { month: 'long' })} Overview</Text>
             <TouchableOpacity onPress={() => { setBudgetInput(budget.toString()); setIsEditing(true); }}>
               <Text style={styles.editBtn}>Edit</Text>
             </TouchableOpacity>
@@ -119,155 +122,140 @@ export default function BudgetScreen() {
           <View style={styles.statsRow}>
             <View style={styles.stat}>
               <Text style={styles.statLabel}>Spent</Text>
-              <Text style={[styles.statValue, { color: progress > 0.9 ? colors.dark.expense : colors.dark.textPrimary }]}>
+              <Text style={[styles.statValue, { color: progress > 0.9 ? themeColors.expense : themeColors.textPrimary }]}>
                 ₹{spent.toLocaleString('en-IN')}
               </Text>
             </View>
             <View style={styles.stat}>
               <Text style={styles.statLabel}>Remaining</Text>
-              <Text style={[styles.statValue, { color: remaining < 0 ? colors.dark.expense : colors.dark.income }]}>
+              <Text style={[styles.statValue, { color: remaining < 0 ? themeColors.expense : themeColors.income }]}>
                 ₹{remaining.toLocaleString('en-IN')}
               </Text>
             </View>
           </View>
-        </Card>
-      )}
-
-      {budget > 0 && !isEditing && (
-        <Card style={styles.insightCard}>
-          <Text style={styles.insightTitle}>Insights</Text>
+          
+          <View style={styles.divider} />
           
           <View style={styles.insightRow}>
-            <Text style={styles.insightLabel}>Days Left in Month</Text>
-            <Text style={styles.insightValue}>{daysLeft} days</Text>
-          </View>
-          
-          <View style={styles.insightRow}>
-            <Text style={styles.insightLabel}>Safe Daily Spend</Text>
-            <Text style={[styles.insightValue, { color: colors.dark.income }]}>
+            <Text style={styles.insightLabel}>Safe Daily Spend ({daysLeft} days left)</Text>
+            <Text style={[styles.insightValue, { color: themeColors.income }]}>
               ₹{dailyLeft.toFixed(0)} / day
             </Text>
           </View>
           
           {remaining < 0 && (
             <Text style={styles.overBudget}>
-              You have over-extended your budget by ₹{Math.abs(remaining).toLocaleString('en-IN')}.
+              Over budget by ₹{Math.abs(remaining).toLocaleString('en-IN')}
             </Text>
           )}
         </Card>
       )}
-    </ScrollView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: colors.dark.background,
-  },
-  content: {
-    padding: 20,
-    paddingTop: 60,
-  },
-  header: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.dark.textPrimary,
     marginBottom: 24,
   },
+  sectionHeader: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: themeColors.textPrimary,
+  },
   setupCard: {
-    padding: 24,
+    padding: 20,
   },
   setupTitle: {
-    fontSize: 16,
-    color: colors.dark.textPrimary,
+    fontSize: 14,
+    color: themeColors.textPrimary,
     marginBottom: 16,
     fontWeight: '500',
   },
   actionRow: {
     flexDirection: 'row',
-    marginTop: 16,
+    marginTop: 12,
   },
   budgetCard: {
-    padding: 24,
+    padding: 20,
   },
   budgetHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   budgetLabel: {
-    fontSize: 14,
-    color: colors.dark.textSecondary,
+    fontSize: 13,
+    color: themeColors.textSecondary,
+    fontWeight: '500',
   },
   editBtn: {
-    color: colors.dark.primary,
-    fontWeight: 'bold',
+    color: themeColors.primary,
+    fontWeight: '600',
+    fontSize: 13,
   },
   budgetValue: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: colors.dark.textPrimary,
-    marginBottom: 24,
+    color: themeColors.textPrimary,
+    marginBottom: 20,
   },
   progressContainer: {
-    height: 8,
-    backgroundColor: colors.dark.border,
-    borderRadius: 4,
+    height: 6,
+    backgroundColor: themeColors.border,
+    borderRadius: 3,
     overflow: 'hidden',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   progressBar: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 20,
   },
   stat: {
     flex: 1,
   },
   statLabel: {
     fontSize: 12,
-    color: colors.dark.textSecondary,
+    color: themeColors.textSecondary,
     marginBottom: 4,
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
-  insightCard: {
-    padding: 24,
-    marginTop: 20,
-  },
-  insightTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.dark.textPrimary,
-    marginBottom: 16,
+  divider: {
+    height: 1,
+    backgroundColor: themeColors.border,
+    marginVertical: 12,
   },
   insightRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    alignItems: 'center',
   },
   insightLabel: {
-    color: colors.dark.textSecondary,
-    fontSize: 14,
+    color: themeColors.textSecondary,
+    fontSize: 13,
   },
   insightValue: {
-    color: colors.dark.textPrimary,
+    color: themeColors.textPrimary,
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 13,
   },
   overBudget: {
-    marginTop: 16,
-    color: colors.dark.expense,
+    marginTop: 12,
+    color: themeColors.expense,
     fontWeight: '500',
-    backgroundColor: `${colors.dark.expense}20`,
-    padding: 12,
-    borderRadius: 8,
+    fontSize: 13,
+    textAlign: 'center',
   },
 });
