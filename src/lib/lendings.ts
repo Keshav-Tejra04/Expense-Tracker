@@ -9,6 +9,7 @@ export interface Lending {
   familyId: string;
   type: LendingType;
   amount: number;
+  settledAmount?: number;
   personName: string;
   note?: string;
   status: LendingStatus;
@@ -36,6 +37,7 @@ export const addLending = async (
     familyId,
     type,
     amount,
+    settledAmount: 0,
     personName,
     note,
     status: 'pending',
@@ -47,9 +49,16 @@ export const addLending = async (
   return lendingId;
 };
 
-export const settleLending = async (lendingId: string) => {
-  await updateDoc(doc(db, 'lendings', lendingId), {
-    status: 'settled'
+export const settleLending = async (lending: Lending, amount: number) => {
+  const currentSettled = lending.settledAmount || 0;
+  const newSettled = currentSettled + amount;
+  
+  // If the new settled amount is greater than or equal to the total amount, mark as settled
+  const newStatus = newSettled >= lending.amount ? 'settled' : 'pending';
+
+  await updateDoc(doc(db, 'lendings', lending.id), {
+    settledAmount: newSettled,
+    status: newStatus
   });
 };
 

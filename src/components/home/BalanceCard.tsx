@@ -18,45 +18,49 @@ export function BalanceCard({ balance, income, expense }: BalanceCardProps) {
   const formatCurrency = (amt: number) => `₹${amt.toLocaleString('en-IN')}`;
 
   return (
-    <Card style={styles.container}>
-      <Text style={styles.label}>Current Balance</Text>
+    <View style={styles.container}>
+      <Text style={styles.label}>Total Balance</Text>
       <Text style={styles.balance}>{formatCurrency(balance)}</Text>
       
       <View style={styles.row}>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Income</Text>
-          <Text style={[styles.statValue, { color: themeColors.income }]}>
-            {formatCurrency(income)}
-          </Text>
+          <View style={[styles.dot, { backgroundColor: themeColors.income }]} />
+          <View>
+            <Text style={styles.statLabel}>Income</Text>
+            <Text style={styles.statValue}>{formatCurrency(income)}</Text>
+          </View>
         </View>
-        <View style={styles.divider} />
+        
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>Expenses</Text>
-          <Text style={[styles.statValue, { color: themeColors.expense }]}>
-            {formatCurrency(expense)}
-          </Text>
+          <View style={[styles.dot, { backgroundColor: themeColors.expense }]} />
+          <View>
+            <Text style={styles.statLabel}>Expenses</Text>
+            <Text style={styles.statValue}>{formatCurrency(expense)}</Text>
+          </View>
         </View>
       </View>
-    </Card>
+    </View>
   );
 }
 
 const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
-    padding: 24,
-    alignItems: 'center',
-    backgroundColor: themeColors.surface,
-  },
-  label: {
-    fontSize: 16,
-    color: themeColors.textSecondary,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
     marginBottom: 8,
   },
+  label: {
+    fontSize: 15,
+    color: themeColors.textSecondary,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
   balance: {
-    fontSize: 36,
-    fontWeight: 'bold',
+    fontSize: 48,
+    fontWeight: '800',
     color: themeColors.textPrimary,
-    marginBottom: 24,
+    marginBottom: 32,
+    letterSpacing: -1,
   },
   row: {
     flexDirection: 'row',
@@ -65,20 +69,24 @@ const getStyles = (themeColors: any) => StyleSheet.create({
   },
   statBox: {
     flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
   },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 12,
+  },
   statLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: themeColors.textSecondary,
-    marginBottom: 4,
+    marginBottom: 2,
+    fontWeight: '500',
   },
   statValue: {
     fontSize: 18,
-    fontWeight: '600',
-  },
-  divider: {
-    width: 1,
-    backgroundColor: themeColors.border,
-    marginHorizontal: 16,
+    fontWeight: '700',
+    color: themeColors.textPrimary,
   },
 });

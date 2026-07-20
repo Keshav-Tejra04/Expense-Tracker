@@ -1,26 +1,32 @@
 export const colors = {
   dark: {
-    background: '#121212',
-    surface: '#1E1E1E',
-    surfaceHover: '#2A2A2A',
-    primary: '#8B5CF6',     // Purple
-    income: '#10B981',      // Green
-    expense: '#EF4444',     // Red
-    textPrimary: '#FFFFFF',
+    background: '#09090B',
+    surface: '#18181B',
+    surfaceHover: '#27272A',
+    primary: '#8B5CF6',
+    primaryGradientStart: '#8B5CF6',
+    primaryGradientEnd: '#4C1D95',
+    income: '#10B981',
+    expense: '#F43F5E',
+    textPrimary: '#FAFAFA',
     textSecondary: '#A1A1AA',
     textMuted: '#52525B',
     border: '#27272A',
+    glass: 'rgba(255, 255, 255, 0.03)',
   },
   light: {
-    background: '#F9FAFB',
+    background: '#F8FAFC',
     surface: '#FFFFFF',
-    surfaceHover: '#F3F4F6',
-    primary: '#7C3AED',     // Purple
-    income: '#059669',      // Green
-    expense: '#DC2626',     // Red
-    textPrimary: '#111827',
-    textSecondary: '#4B5563',
-    textMuted: '#9CA3AF',
-    border: '#E5E7EB',
+    surfaceHover: '#F1F5F9',
+    primary: '#7C3AED',
+    primaryGradientStart: '#7C3AED',
+    primaryGradientEnd: '#4C1D95',
+    income: '#059669',
+    expense: '#E11D48',
+    textPrimary: '#0F172A',
+    textSecondary: '#64748B',
+    textMuted: '#94A3B8',
+    border: '#E2E8F0',
+    glass: 'rgba(0, 0, 0, 0.02)',
   }
 };

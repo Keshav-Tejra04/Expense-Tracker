@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, KeyboardAvoidingView, Platform, Pressable, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { addLending, LendingType } from '../lib/lendings';
@@ -8,6 +8,7 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { colors } from '../constants/colors';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function AddLendingScreen() {
   const { theme } = useTheme();
@@ -70,52 +71,78 @@ export default function AddLendingScreen() {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <View style={styles.header}>
+        <View style={{ width: 40 }} />
+        <Text style={styles.headerTitle}>Add Record</Text>
+        <Pressable 
+          style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.5 }]} 
+          onPress={() => router.back()}
+        >
+          <MaterialCommunityIcons name="close" size={24} color={themeColors.textSecondary} />
+        </Pressable>
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
+        {/* Toggle Buttons (Transparent style) */}
         <View style={styles.toggleContainer}>
           <TouchableOpacity 
-            style={[styles.toggleBtn, type === 'lent' && { backgroundColor: themeColors.expense }]}
+            style={[
+              styles.toggleBtn, 
+              type === 'lent' && { backgroundColor: `${themeColors.expense}20`, borderColor: themeColors.expense }
+            ]}
             onPress={() => setType('lent')}
           >
-            <Text style={[styles.toggleText, type === 'lent' && styles.toggleTextActive]}>I Gave Money</Text>
+            <Text style={[styles.toggleText, type === 'lent' && { color: themeColors.expense }]}>I Gave Money</Text>
           </TouchableOpacity>
           <View style={{ width: 12 }} />
           <TouchableOpacity 
-            style={[styles.toggleBtn, type === 'borrowed' && { backgroundColor: themeColors.income }]}
+            style={[
+              styles.toggleBtn, 
+              type === 'borrowed' && { backgroundColor: `${themeColors.income}20`, borderColor: themeColors.income }
+            ]}
             onPress={() => setType('borrowed')}
           >
-            <Text style={[styles.toggleText, type === 'borrowed' && styles.toggleTextActive]}>I Took Money</Text>
+            <Text style={[styles.toggleText, type === 'borrowed' && { color: themeColors.income }]}>I Took Money</Text>
           </TouchableOpacity>
         </View>
 
-        <Input
-          label="Person's Name"
-          placeholder="Who did you give/take from?"
-          value={personName}
-          onChangeText={setPersonName}
-        />
+        {/* Large Amount Input */}
+        <View style={styles.amountSection}>
+          <Text style={[styles.currencySymbol, { color: type === 'lent' ? themeColors.expense : themeColors.income }]}>₹</Text>
+          <TextInput
+            style={[styles.largeAmountInput, { color: type === 'lent' ? themeColors.expense : themeColors.income }]}
+            placeholder="0"
+            placeholderTextColor={themeColors.border}
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="numeric"
+            autoFocus
+          />
+        </View>
 
-        <Input
-          label="Amount (₹)"
-          placeholder="0.00"
-          value={amount}
-          onChangeText={setAmount}
-          keyboardType="numeric"
-          style={styles.amountInput}
-        />
+        {/* Details Card */}
+        <Card variant="glass" style={styles.detailsCard}>
+          <Input
+            label="Person's Name"
+            placeholder="Who did you give/take from?"
+            value={personName}
+            onChangeText={setPersonName}
+          />
 
-        <Input
-          label="Date (YYYY-MM-DD)"
-          value={dateStr}
-          onChangeText={setDateStr}
-        />
+          <Input
+            label="Date (YYYY-MM-DD)"
+            value={dateStr}
+            onChangeText={setDateStr}
+          />
 
-        <Input
-          label="Note (Optional)"
-          placeholder="Reason for this"
-          value={note}
-          onChangeText={setNote}
-        />
+          <Input
+            label="Note (Optional)"
+            placeholder="Reason for this"
+            value={note}
+            onChangeText={setNote}
+          />
+        </Card>
 
         <Button 
           title="Save Record" 
@@ -134,36 +161,72 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     flex: 1,
     backgroundColor: themeColors.background,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: themeColors.textPrimary,
+  },
+  closeBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: themeColors.surfaceHover,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   scrollContent: {
-    padding: 20,
+    padding: 24,
     paddingBottom: 40,
   },
   toggleContainer: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: 32,
   },
   toggleBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
+    paddingVertical: 14,
+    borderRadius: 16,
+    borderWidth: 1.5,
     borderColor: themeColors.border,
     alignItems: 'center',
-    backgroundColor: themeColors.surfaceHover,
+    backgroundColor: 'transparent',
   },
   toggleText: {
     color: themeColors.textSecondary,
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontWeight: '800',
+    fontSize: 15,
   },
-  toggleTextActive: {
-    color: '#FFFFFF',
+  amountSection: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 40,
   },
-  amountInput: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  currencySymbol: {
+    fontSize: 48,
+    fontWeight: '800',
+    marginRight: 8,
+    marginTop: -8,
+  },
+  largeAmountInput: {
+    fontSize: 72,
+    fontWeight: '800',
+    minWidth: 100,
+    textAlign: 'center',
+  },
+  detailsCard: {
+    padding: 24,
+    marginBottom: 24,
   },
   saveBtn: {
-    marginTop: 24,
+    marginTop: 8,
   },
 });

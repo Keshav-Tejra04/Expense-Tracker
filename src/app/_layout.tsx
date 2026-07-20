@@ -6,8 +6,13 @@ import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, LogBox } from 'react-native';
 import { colors } from '../constants/colors';
+
+// Ignore specific warnings
+LogBox.ignoreLogs([
+  'Invalid DOM property `transform-origin`', // from react-native-chart-kit on Web
+]);
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -43,8 +48,8 @@ function InitialLayout() {
     <Stack>
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="add-transaction" options={{ presentation: 'modal', title: 'Add Transaction', headerStyle: { backgroundColor: themeColors.surface }, headerTintColor: themeColors.textPrimary }} />
-      <Stack.Screen name="add-lending" options={{ presentation: 'modal', title: 'Add Lending', headerStyle: { backgroundColor: themeColors.surface }, headerTintColor: themeColors.textPrimary }} />
+      <Stack.Screen name="add-transaction" options={{ presentation: 'modal', headerShown: false }} />
+      <Stack.Screen name="add-lending" options={{ presentation: 'modal', headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

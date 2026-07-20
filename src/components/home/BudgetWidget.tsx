@@ -16,7 +16,6 @@ export function BudgetWidget() {
 
   const { family, loading: familyLoading } = useFamily();
   
-  // Get current month YYYY-MM
   const today = new Date();
   const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
   
@@ -58,16 +57,15 @@ export function BudgetWidget() {
 
   const remaining = budget - spent;
   
-  // Calculate daily budget left
   const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-  const daysLeft = daysInMonth - today.getDate() + 1; // +1 to include today
+  const daysLeft = daysInMonth - today.getDate() + 1;
   const dailyLeft = remaining > 0 ? (remaining / daysLeft) : 0;
 
   const progress = budget > 0 ? Math.min(spent / budget, 1) : 0;
   
   let progressColor = themeColors.primary;
-  if (progress > 0.8) progressColor = themeColors.expense;
-  else if (progress > 0.5) progressColor = '#F59E0B'; // Orange/warning
+  if (progress > 0.85) progressColor = themeColors.expense;
+  else if (progress > 0.6) progressColor = '#F59E0B'; // Amber
 
   return (
     <View style={styles.container}>
@@ -76,7 +74,7 @@ export function BudgetWidget() {
       </View>
       
       {(!budget || isEditing) ? (
-        <Card style={styles.setupCard}>
+        <Card variant="glass" style={styles.setupCard}>
           <Text style={styles.setupTitle}>
             {budget ? 'Update Budget' : 'Set your family monthly budget'}
           </Text>
@@ -105,7 +103,7 @@ export function BudgetWidget() {
           </View>
         </Card>
       ) : (
-        <Card style={styles.budgetCard}>
+        <Card variant="glass" style={styles.budgetCard}>
           <View style={styles.budgetHeader}>
             <Text style={styles.budgetLabel}>{today.toLocaleString('default', { month: 'long' })} Overview</Text>
             <TouchableOpacity onPress={() => { setBudgetInput(budget.toString()); setIsEditing(true); }}>
@@ -116,17 +114,26 @@ export function BudgetWidget() {
           <Text style={styles.budgetValue}>₹{budget.toLocaleString('en-IN')}</Text>
           
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { width: `${progress * 100}%`, backgroundColor: progressColor }]} />
+            <View 
+              style={[
+                styles.progressBar, 
+                { 
+                  width: `${progress * 100}%`, 
+                  backgroundColor: progressColor,
+                  shadowColor: progressColor,
+                }
+              ]} 
+            />
           </View>
           
           <View style={styles.statsRow}>
             <View style={styles.stat}>
               <Text style={styles.statLabel}>Spent</Text>
-              <Text style={[styles.statValue, { color: progress > 0.9 ? themeColors.expense : themeColors.textPrimary }]}>
+              <Text style={[styles.statValue, { color: themeColors.textPrimary }]}>
                 ₹{spent.toLocaleString('en-IN')}
               </Text>
             </View>
-            <View style={styles.stat}>
+            <View style={[styles.stat, { alignItems: 'flex-end' }]}>
               <Text style={styles.statLabel}>Remaining</Text>
               <Text style={[styles.statValue, { color: remaining < 0 ? themeColors.expense : themeColors.income }]}>
                 ₹{remaining.toLocaleString('en-IN')}
@@ -138,15 +145,17 @@ export function BudgetWidget() {
           
           <View style={styles.insightRow}>
             <Text style={styles.insightLabel}>Safe Daily Spend ({daysLeft} days left)</Text>
-            <Text style={[styles.insightValue, { color: themeColors.income }]}>
+            <Text style={[styles.insightValue, { color: themeColors.primary }]}>
               ₹{dailyLeft.toFixed(0)} / day
             </Text>
           </View>
           
           {remaining < 0 && (
-            <Text style={styles.overBudget}>
-              Over budget by ₹{Math.abs(remaining).toLocaleString('en-IN')}
-            </Text>
+            <View style={styles.overBudgetContainer}>
+              <Text style={styles.overBudget}>
+                Over budget by ₹{Math.abs(remaining).toLocaleString('en-IN')}
+              </Text>
+            </View>
           )}
         </Card>
       )}
@@ -164,60 +173,68 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 4,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '800',
     color: themeColors.textPrimary,
+    letterSpacing: 0.3,
   },
   setupCard: {
-    padding: 20,
+    padding: 24,
   },
   setupTitle: {
-    fontSize: 14,
+    fontSize: 16,
     color: themeColors.textPrimary,
-    marginBottom: 16,
-    fontWeight: '500',
+    marginBottom: 20,
+    fontWeight: '600',
   },
   actionRow: {
     flexDirection: 'row',
-    marginTop: 12,
+    marginTop: 16,
   },
   budgetCard: {
-    padding: 20,
+    padding: 24,
   },
   budgetHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   budgetLabel: {
-    fontSize: 13,
+    fontSize: 14,
     color: themeColors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   editBtn: {
     color: themeColors.primary,
-    fontWeight: '600',
-    fontSize: 13,
+    fontWeight: '700',
+    fontSize: 14,
   },
   budgetValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 36,
+    fontWeight: '800',
     color: themeColors.textPrimary,
-    marginBottom: 20,
+    marginBottom: 24,
+    letterSpacing: -0.5,
   },
   progressContainer: {
-    height: 6,
-    backgroundColor: themeColors.border,
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: 20,
+    height: 8,
+    backgroundColor: themeColors.surfaceHover,
+    borderRadius: 4,
+    marginBottom: 24,
   },
   progressBar: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 4,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+    elevation: 4,
   },
   statsRow: {
     flexDirection: 'row',
@@ -228,18 +245,19 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     flex: 1,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: themeColors.textSecondary,
-    marginBottom: 4,
+    marginBottom: 6,
+    fontWeight: '500',
   },
   statValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
   },
   divider: {
     height: 1,
     backgroundColor: themeColors.border,
-    marginVertical: 12,
+    marginVertical: 16,
   },
   insightRow: {
     flexDirection: 'row',
@@ -248,18 +266,24 @@ const getStyles = (themeColors: any) => StyleSheet.create({
   },
   insightLabel: {
     color: themeColors.textSecondary,
-    fontSize: 13,
+    fontSize: 14,
+    fontWeight: '500',
   },
   insightValue: {
-    color: themeColors.textPrimary,
-    fontWeight: 'bold',
-    fontSize: 13,
+    color: themeColors.primary,
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  overBudgetContainer: {
+    marginTop: 16,
+    backgroundColor: `${themeColors.expense}15`,
+    padding: 12,
+    borderRadius: 12,
   },
   overBudget: {
-    marginTop: 12,
     color: themeColors.expense,
-    fontWeight: '500',
-    fontSize: 13,
+    fontWeight: '600',
+    fontSize: 14,
     textAlign: 'center',
   },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Transaction } from '../../lib/transactions';
 import { defaultExpenseCategories, defaultIncomeCategories } from '../../constants/categories';
@@ -17,7 +17,7 @@ export function TransactionCard({ transaction, onPress }: TransactionCardProps) 
   const styles = getStyles(themeColors);
 
   const isExpense = transaction.type === 'expense';
-  const amountColor = isExpense ? themeColors.expense : themeColors.income;
+  const amountColor = isExpense ? themeColors.textPrimary : themeColors.income;
   const prefix = isExpense ? '-' : '+';
   
   // Find category to get icon and color
@@ -27,27 +27,35 @@ export function TransactionCard({ transaction, onPress }: TransactionCardProps) 
   const iconColor = categoryConfig?.color || themeColors.textSecondary;
 
   return (
-    <TouchableOpacity onPress={onPress} disabled={!onPress}>
-      <View style={styles.container}>
-        <View style={[styles.iconContainer, { backgroundColor: `${iconColor}20` }]}>
-          <MaterialCommunityIcons name={iconName as any} size={24} color={iconColor} />
-        </View>
-        
-        <View style={styles.details}>
-          <Text style={styles.category} numberOfLines={1}>{transaction.category}</Text>
-          <Text style={styles.note} numberOfLines={1}>
-            {transaction.note ? transaction.note : `By ${transaction.memberName}`}
-          </Text>
-        </View>
-        
-        <View style={styles.amountContainer}>
-          <Text style={[styles.amount, { color: amountColor }]}>
-            {prefix}₹{transaction.amount.toLocaleString('en-IN')}
-          </Text>
-          <Text style={styles.date}>{transaction.date}</Text>
-        </View>
+    <Pressable 
+      onPress={onPress} 
+      disabled={!onPress}
+      style={({ pressed }) => [
+        styles.container,
+        {
+          backgroundColor: pressed ? themeColors.surfaceHover : 'transparent',
+          transform: [{ scale: pressed ? 0.98 : 1 }]
+        }
+      ]}
+    >
+      <View style={[styles.iconContainer, { backgroundColor: `${iconColor}15` }]}>
+        <MaterialCommunityIcons name={iconName as any} size={24} color={iconColor} />
       </View>
-    </TouchableOpacity>
+      
+      <View style={styles.details}>
+        <Text style={styles.category} numberOfLines={1}>{transaction.category}</Text>
+        <Text style={styles.note} numberOfLines={1}>
+          {transaction.note ? transaction.note : `By ${transaction.memberName}`}
+        </Text>
+      </View>
+      
+      <View style={styles.amountContainer}>
+        <Text style={[styles.amount, { color: amountColor }]}>
+          {prefix}₹{transaction.amount.toLocaleString('en-IN')}
+        </Text>
+        <Text style={styles.date}>{transaction.date}</Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -56,8 +64,9 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: themeColors.border,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    marginBottom: 4,
   },
   iconContainer: {
     width: 48,
@@ -65,7 +74,7 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
   details: {
     flex: 1,
@@ -87,7 +96,7 @@ const getStyles = (themeColors: any) => StyleSheet.create({
   },
   amount: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: 4,
   },
   date: {

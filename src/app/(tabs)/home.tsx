@@ -1,7 +1,8 @@
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { logoutUser } from '../../lib/auth';
 import { useTransactions } from '../../hooks/useTransactions';
@@ -9,7 +10,6 @@ import { deleteTransaction } from '../../lib/transactions';
 import { BalanceCard } from '../../components/home/BalanceCard';
 import { BudgetWidget } from '../../components/home/BudgetWidget';
 import { TransactionCard } from '../../components/transactions/TransactionCard';
-import { Button } from '../../components/ui/Button';
 import { colors } from '../../constants/colors';
 
 export default function HomeScreen() {
@@ -49,6 +49,8 @@ export default function HomeScreen() {
     );
   }
 
+  const recentTransactions = transactions.slice(0, 10);
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
@@ -64,27 +66,31 @@ export default function HomeScreen() {
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Recent Transactions</Text>
+        <Pressable 
+          onPress={() => router.push('/add-transaction')}
+          style={({ pressed }) => [
+            styles.addIconBtn,
+            { transform: [{ scale: pressed ? 0.9 : 1 }] }
+          ]}
+        >
+          <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
+          <Text style={styles.addIconText}>Add</Text>
+        </Pressable>
       </View>
 
       <View style={styles.transactionList}>
-        {transactions.length === 0 ? (
-          <Text style={styles.emptyText}>No transactions yet. Add one below!</Text>
-        ) : (
-          transactions.slice(0, 10).map((t) => (
+        {recentTransactions.length > 0 ? (
+          recentTransactions.map(txn => (
             <TransactionCard 
-              key={t.id} 
-              transaction={t} 
-              onPress={() => handleDelete(t.id)} 
+              key={txn.id} 
+              transaction={txn}
+              onPress={() => handleDelete(txn.id)}
             />
           ))
+        ) : (
+          <Text style={styles.emptyText}>No recent transactions</Text>
         )}
       </View>
-
-      <Button 
-        title="+ Add Transaction" 
-        onPress={() => router.push('/add-transaction')} 
-        style={styles.addButton}
-      />
     </ScrollView>
   );
 }
@@ -95,56 +101,77 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     backgroundColor: themeColors.background,
   },
   content: {
-    padding: 20,
-    paddingTop: 60, // Extra padding for top
-    paddingBottom: 40,
+    padding: 24,
+    paddingTop: 64, // Extra padding for top
+    paddingBottom: 48,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
   },
   greeting: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '800',
     color: themeColors.textPrimary,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: themeColors.textSecondary,
-    marginTop: 4,
+    marginTop: 6,
+    fontWeight: '500',
   },
   logoutBtn: {
-    padding: 8,
+    padding: 10,
     backgroundColor: themeColors.surfaceHover,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   logoutText: {
     color: themeColors.expense,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   sectionHeader: {
-    marginTop: 16,
+    marginTop: 24,
     marginBottom: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 4,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '800',
     color: themeColors.textPrimary,
+    letterSpacing: 0.3,
+  },
+  addIconBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: themeColors.textPrimary,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 100,
+  },
+  addIconText: {
+    color: themeColors.textPrimary,
+    fontWeight: '800',
+    fontSize: 13,
+    marginLeft: 4,
   },
   transactionList: {
     backgroundColor: themeColors.surface,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 24,
+    padding: 12,
   },
   emptyText: {
     color: themeColors.textMuted,
     textAlign: 'center',
-    paddingVertical: 20,
+    paddingVertical: 32,
+    fontWeight: '500',
   },
   addButton: {
     marginTop: 32,

@@ -4,7 +4,7 @@ import { View, ViewProps, StyleSheet } from 'react-native';
 import { colors } from '../../constants/colors';
 
 interface CardProps extends ViewProps {
-  variant?: 'elevated' | 'flat';
+  variant?: 'elevated' | 'flat' | 'glass';
 }
 
 export function Card({ children, variant = 'elevated', style, ...props }: CardProps) {
@@ -16,7 +16,11 @@ export function Card({ children, variant = 'elevated', style, ...props }: CardPr
     <View
       style={[
         styles.card,
-        {
+        variant === 'glass' ? {
+          backgroundColor: themeColors.glass,
+          borderColor: themeColors.border,
+          borderWidth: 1,
+        } : {
           backgroundColor: themeColors.surface,
           borderColor: themeColors.border,
           borderWidth: variant === 'flat' ? 1 : 0,
@@ -32,16 +36,16 @@ export function Card({ children, variant = 'elevated', style, ...props }: CardPr
 
 const getStyles = (themeColors: any) => StyleSheet.create({
   card: {
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 24, // Bigger radius
+    padding: 20,
     marginVertical: 8,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 8,
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    elevation: 3,
   },
 });

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
@@ -23,7 +23,6 @@ export default function AddTransactionScreen() {
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
   
-  // Format today's date as YYYY-MM-DD
   const today = new Date();
   const defaultDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const [dateStr, setDateStr] = useState(defaultDateStr);
@@ -76,29 +75,45 @@ export default function AddTransactionScreen() {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()} style={styles.closeBtn}>
+          <MaterialCommunityIcons name="close" size={28} color={themeColors.textPrimary} />
+        </Pressable>
+        <Text style={styles.headerTitle}>New Transaction</Text>
+        <View style={styles.closeBtn} />
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
         {/* Type Toggle */}
         <View style={styles.toggleContainer}>
-          <TouchableOpacity 
-            style={[styles.toggleBtn, type === 'expense' && { backgroundColor: themeColors.expense }]}
+          <Pressable 
+            style={({ pressed }) => [
+              styles.toggleBtn, 
+              type === 'expense' && { backgroundColor: themeColors.expense, borderColor: themeColors.expense },
+              { transform: [{ scale: pressed ? 0.96 : 1 }] }
+            ]}
             onPress={() => { setType('expense'); setCategory(''); }}
           >
             <Text style={[styles.toggleText, type === 'expense' && styles.toggleTextActive]}>Expense</Text>
-          </TouchableOpacity>
+          </Pressable>
           <View style={{ width: 12 }} />
-          <TouchableOpacity 
-            style={[styles.toggleBtn, type === 'income' && { backgroundColor: themeColors.income }]}
+          <Pressable 
+            style={({ pressed }) => [
+              styles.toggleBtn, 
+              type === 'income' && { backgroundColor: themeColors.income, borderColor: themeColors.income },
+              { transform: [{ scale: pressed ? 0.96 : 1 }] }
+            ]}
             onPress={() => { setType('income'); setCategory(''); }}
           >
             <Text style={[styles.toggleText, type === 'income' && styles.toggleTextActive]}>Income</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* Amount Input */}
         <Input
           label="Amount (₹)"
-          placeholder="0.00"
+          placeholder="0"
           value={amount}
           onChangeText={setAmount}
           keyboardType="numeric"
@@ -116,17 +131,18 @@ export default function AddTransactionScreen() {
         <Text style={styles.sectionTitle}>Select Category</Text>
         <View style={styles.categoryGrid}>
           {activeCategories.map(cat => (
-            <TouchableOpacity 
+            <Pressable 
               key={cat.id} 
-              style={[
+              style={({ pressed }) => [
                 styles.categoryChip, 
-                category === cat.name && { borderColor: cat.color, backgroundColor: `${cat.color}20` }
+                category === cat.name && { borderColor: cat.color, backgroundColor: `${cat.color}15` },
+                { transform: [{ scale: pressed ? 0.92 : 1 }] }
               ]}
               onPress={() => setCategory(cat.name)}
             >
-              <MaterialCommunityIcons name={cat.icon} size={24} color={cat.color} />
+              <MaterialCommunityIcons name={cat.icon} size={28} color={cat.color} />
               <Text style={styles.categoryName} numberOfLines={1}>{cat.name}</Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
@@ -156,67 +172,94 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     flex: 1,
     backgroundColor: themeColors.background,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 64 : 24,
+    paddingBottom: 24,
+  },
+  closeBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: themeColors.textPrimary,
+    letterSpacing: 0.5,
+  },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: 24,
+    paddingBottom: 48,
   },
   toggleContainer: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: 32,
+    backgroundColor: themeColors.surfaceHover,
+    padding: 6,
+    borderRadius: 100,
   },
   toggleBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.border,
+    paddingVertical: 14,
+    borderRadius: 100,
     alignItems: 'center',
-    backgroundColor: themeColors.surfaceHover,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
   },
   toggleText: {
     color: themeColors.textSecondary,
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontWeight: '700',
+    fontSize: 15,
   },
   toggleTextActive: {
     color: '#FFFFFF',
   },
   amountInput: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '800',
+    letterSpacing: -1,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: themeColors.textSecondary,
-    marginTop: 20,
-    marginBottom: 12,
+    marginTop: 16,
+    marginBottom: 20,
     fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   categoryChip: {
     width: '31%',
     aspectRatio: 1,
     backgroundColor: themeColors.surface,
-    borderRadius: 12,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
     borderWidth: 2,
     borderColor: 'transparent',
-    padding: 4,
+    padding: 8,
   },
   categoryName: {
     color: themeColors.textPrimary,
-    fontSize: 10,
+    fontSize: 12,
     marginTop: 8,
+    fontWeight: '600',
     textAlign: 'center',
   },
   saveBtn: {
-    marginTop: 24,
+    marginTop: 32,
+    marginBottom: 24,
   },
 });
