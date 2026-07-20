@@ -18,4 +18,5 @@ export interface Family {
   createdAt: number;
   createdBy: string;
   initialBalance?: number;
+  monthlyBudget?: number;
 }
