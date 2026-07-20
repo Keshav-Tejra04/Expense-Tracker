@@ -50,9 +50,6 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>Hello, {userData?.name}</Text>
           <Text style={styles.subtitle}>Here is your family summary</Text>
         </View>
-        <TouchableOpacity onPress={logoutUser} style={styles.logoutBtn}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
       </View>
 
       <BalanceCard balance={balance} income={totalIncome} expense={totalExpense} />
