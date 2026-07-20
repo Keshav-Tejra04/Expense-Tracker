@@ -156,10 +156,14 @@ export function BudgetWidget() {
 
 const getStyles = (themeColors: any) => StyleSheet.create({
   container: {
-    marginBottom: 24,
+    marginTop: 16,
+    marginBottom: 8,
   },
   sectionHeader: {
     marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   sectionTitle: {
     fontSize: 18,

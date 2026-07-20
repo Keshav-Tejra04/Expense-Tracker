@@ -125,7 +125,7 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     fontWeight: '600',
   },
   sectionHeader: {
-    marginTop: 32,
+    marginTop: 16,
     marginBottom: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
