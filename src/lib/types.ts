@@ -17,6 +17,7 @@ export interface Family {
   currency: string;
   createdAt: number;
   createdBy: string;
-  initialBalance?: number;
+  initialCashBalance?: number;
+  initialOnlineBalance?: number;
   monthlyBudget?: number;
 }

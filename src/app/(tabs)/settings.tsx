@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Clipboard } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useFamily } from '../../hooks/useFamily';
+import { useTransactions } from '../../hooks/useTransactions';
+import { useLendings } from '../../hooks/useLendings';
 import { logoutUser } from '../../lib/auth';
+import { updateFamilyBalances } from '../../lib/family';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { Input } from '../../components/ui/Input';
 import { colors } from '../../constants/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -16,11 +20,82 @@ export default function SettingsScreen() {
 
   const { userData } = useAuth();
   const { family } = useFamily();
+  const { transactions, loading: txLoading } = useTransactions();
+  const { lendings, loading: lnLoading } = useLendings();
+
+  const [isEditingBalances, setIsEditingBalances] = useState(false);
+  const [cashBalance, setCashBalance] = useState('');
+  const [onlineBalance, setOnlineBalance] = useState('');
+  const [isSavingBalances, setIsSavingBalances] = useState(false);
+
+  // Helper to calculate totals
+  const sum = (arr: any[], predicate: (item: any) => boolean) => 
+    arr.filter(predicate).reduce((acc, item) => acc + item.amount, 0);
+
+  // Wallet Specific Transactions
+  const incomeCash = sum(transactions, t => t.type === 'income' && t.paymentMethod === 'cash');
+  const expenseCash = sum(transactions, t => t.type === 'expense' && t.paymentMethod === 'cash');
+  const transferToCash = sum(transactions, t => t.type === 'transfer' && t.transferSource === 'online');
+  const transferFromCash = sum(transactions, t => t.type === 'transfer' && t.transferSource === 'cash');
+  
+  const incomeOnline = sum(transactions, t => t.type === 'income' && t.paymentMethod === 'online');
+  const expenseOnline = sum(transactions, t => t.type === 'expense' && t.paymentMethod === 'online');
+
+  // Wallet Specific Lendings
+  const lentCash = sum(lendings, l => l.type === 'lent' && l.paymentMethod === 'cash');
+  const lentCashSettled = lendings.filter(l => l.type === 'lent' && l.paymentMethod === 'cash').reduce((acc, l) => acc + (l.settledAmount || 0), 0);
+  const borrowedCash = sum(lendings, l => l.type === 'borrowed' && l.paymentMethod === 'cash');
+  const borrowedCashSettled = lendings.filter(l => l.type === 'borrowed' && l.paymentMethod === 'cash').reduce((acc, l) => acc + (l.settledAmount || 0), 0);
+
+  const lentOnline = sum(lendings, l => l.type === 'lent' && l.paymentMethod === 'online');
+  const lentOnlineSettled = lendings.filter(l => l.type === 'lent' && l.paymentMethod === 'online').reduce((acc, l) => acc + (l.settledAmount || 0), 0);
+  const borrowedOnline = sum(lendings, l => l.type === 'borrowed' && l.paymentMethod === 'online');
+  const borrowedOnlineSettled = lendings.filter(l => l.type === 'borrowed' && l.paymentMethod === 'online').reduce((acc, l) => acc + (l.settledAmount || 0), 0);
+
+  // Deltas from transactions/lendings
+  const cashDelta = incomeCash - expenseCash + transferToCash - transferFromCash - lentCash + lentCashSettled + borrowedCash - borrowedCashSettled;
+  const onlineDelta = incomeOnline - expenseOnline + transferFromCash - transferToCash - lentOnline + lentOnlineSettled + borrowedOnline - borrowedOnlineSettled;
+
+  // Dynamically computed current balances
+  const currentCash = (family?.initialCashBalance || 0) + cashDelta;
+  const currentOnline = (family?.initialOnlineBalance || 0) + onlineDelta;
+
+  useEffect(() => {
+    if (family && !isEditingBalances && !txLoading && !lnLoading) {
+      setCashBalance(currentCash.toString());
+      setOnlineBalance(currentOnline.toString());
+    }
+  }, [family, isEditingBalances, txLoading, lnLoading, currentCash, currentOnline]);
 
   const handleCopyCode = () => {
     if (family?.code) {
       Clipboard.setString(family.code);
       Alert.alert('Copied!', 'Family Code has been copied to your clipboard. Share it with your family members so they can join.');
+    }
+  };
+
+  const handleSaveBalances = async () => {
+    if (!family) return;
+    setIsSavingBalances(true);
+    try {
+      const targetCash = Number(cashBalance);
+      const targetOnline = Number(onlineBalance);
+
+      if (isNaN(targetCash) || isNaN(targetOnline)) {
+        throw new Error('Please enter valid numeric balances');
+      }
+
+      // Calculate what the initial balances should be to make current balances match user input
+      const newInitialCash = targetCash - cashDelta;
+      const newInitialOnline = targetOnline - onlineDelta;
+
+      await updateFamilyBalances(family.id, newInitialCash, newInitialOnline);
+      setIsEditingBalances(false);
+      Alert.alert('Success', 'Current balances updated successfully!');
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
+    } finally {
+      setIsSavingBalances(false);
     }
   };
 
@@ -65,6 +140,41 @@ export default function SettingsScreen() {
           <Text style={styles.infoLabel}>Family Name</Text>
           <Text style={styles.infoValue}>{family?.name || 'Loading...'}</Text>
         </View>
+
+        {isEditingBalances ? (
+          <View style={{ marginTop: 12, marginBottom: 16 }}>
+            <Input 
+              label="Current Cash Balance (₹)" 
+              value={cashBalance} 
+              onChangeText={setCashBalance} 
+              keyboardType="numeric" 
+            />
+            <Input 
+              label="Current Online Balance (₹)" 
+              value={onlineBalance} 
+              onChangeText={setOnlineBalance} 
+              keyboardType="numeric" 
+            />
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
+              <Button title="Cancel" variant="secondary" onPress={() => setIsEditingBalances(false)} style={{ flex: 1 }} />
+              <Button title="Save" onPress={handleSaveBalances} isLoading={isSavingBalances} style={{ flex: 1 }} />
+            </View>
+          </View>
+        ) : (
+          <>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Current Cash Balance</Text>
+              <Text style={styles.infoValue}>₹{(currentCash || 0).toLocaleString('en-IN')}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Current Online Balance</Text>
+              <Text style={styles.infoValue}>₹{(currentOnline || 0).toLocaleString('en-IN')}</Text>
+            </View>
+            <TouchableOpacity onPress={() => setIsEditingBalances(true)} style={{ alignSelf: 'flex-start', marginBottom: 16 }}>
+              <Text style={{ color: themeColors.primary, fontWeight: '600' }}>Edit Balances</Text>
+            </TouchableOpacity>
+          </>
+        )}
         
         <View style={styles.codeContainer}>
           <View>

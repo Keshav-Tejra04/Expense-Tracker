@@ -21,6 +21,8 @@ export default function RegisterScreen() {
   // Specific fields
   const [familyCode, setFamilyCode] = useState('');
   const [familyName, setFamilyName] = useState('');
+  const [initialCashBalance, setInitialCashBalance] = useState('');
+  const [initialOnlineBalance, setInitialOnlineBalance] = useState('');
   
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -48,7 +50,9 @@ export default function RegisterScreen() {
         password, 
         name, 
         mode === 'create' ? familyName : undefined, 
-        mode === 'join' ? familyCode : undefined
+        mode === 'join' ? familyCode : undefined,
+        mode === 'create' && initialCashBalance ? Number(initialCashBalance) : undefined,
+        mode === 'create' && initialOnlineBalance ? Number(initialOnlineBalance) : undefined
       );
       // AuthContext will handle redirect to (tabs) automatically
     } catch (error: any) {
@@ -119,12 +123,34 @@ export default function RegisterScreen() {
               autoCapitalize="characters"
             />
           ) : (
-            <Input
-              label="Family Name"
-              placeholder="e.g. Sharma Family"
-              value={familyName}
-              onChangeText={setFamilyName}
-            />
+            <>
+              <Input
+                label="Family Name"
+                placeholder="e.g. Sharma Family"
+                value={familyName}
+                onChangeText={setFamilyName}
+              />
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <Input
+                    label="Initial Cash (₹)"
+                    placeholder="0"
+                    value={initialCashBalance}
+                    onChangeText={setInitialCashBalance}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={{ flex: 1, marginLeft: 8 }}>
+                  <Input
+                    label="Initial Online (₹)"
+                    placeholder="0"
+                    value={initialOnlineBalance}
+                    onChangeText={setInitialOnlineBalance}
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+            </>
           )}
 
           <Button 
@@ -140,7 +166,13 @@ export default function RegisterScreen() {
           <Button 
             title="Go to Login" 
             variant="secondary"
-            onPress={() => router.back()} 
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/(auth)/login' as any);
+              }
+            }} 
           />
         </View>
       </ScrollView>

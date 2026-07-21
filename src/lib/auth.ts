@@ -8,7 +8,13 @@ const generateFamilyCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 
-export const createFamily = async (userId: string, userName: string, familyName: string): Promise<string> => {
+export const createFamily = async (
+  userId: string, 
+  userName: string, 
+  familyName: string,
+  initialCashBalance?: number,
+  initialOnlineBalance?: number
+): Promise<string> => {
   const familyId = `fam_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   const familyCode = generateFamilyCode();
 
@@ -20,13 +26,23 @@ export const createFamily = async (userId: string, userName: string, familyName:
     currency: '₹',
     createdAt: Date.now(),
     createdBy: userId,
+    initialCashBalance: initialCashBalance || 0,
+    initialOnlineBalance: initialOnlineBalance || 0,
   };
 
   await setDoc(doc(db, 'families', familyId), newFamily);
   return familyId;
 };
 
-export const registerUser = async (email: string, password: string, name: string, familyName?: string, familyCode?: string) => {
+export const registerUser = async (
+  email: string, 
+  password: string, 
+  name: string, 
+  familyName?: string, 
+  familyCode?: string,
+  initialCashBalance?: number,
+  initialOnlineBalance?: number
+) => {
   // 1. Create Firebase Auth User
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const firebaseUser = userCredential.user;
@@ -56,7 +72,7 @@ export const registerUser = async (email: string, password: string, name: string
     
   } else if (familyName) {
     // Create new family
-    familyId = await createFamily(firebaseUser.uid, name, familyName);
+    familyId = await createFamily(firebaseUser.uid, name, familyName, initialCashBalance, initialOnlineBalance);
     role = 'admin';
   } else {
     throw new Error('Must provide either a Family Name or a Family Code');

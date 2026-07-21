@@ -19,6 +19,8 @@ export default function AddTransactionScreen() {
   const router = useRouter();
   
   const [type, setType] = useState<TransactionType>('expense');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'online'>('online');
+  const [transferSource, setTransferSource] = useState<'cash' | 'online'>('online'); // Used if type === 'transfer'
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
@@ -32,19 +34,31 @@ export default function AddTransactionScreen() {
   const activeCategories = type === 'expense' ? defaultExpenseCategories : defaultIncomeCategories;
 
   const handleSave = async () => {
+    console.log('[AddTransaction] Saving transaction...', {
+      amount,
+      type,
+      category,
+      dateStr,
+      userData
+    });
+
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      console.warn('[AddTransaction] Validation failed: Invalid amount');
       Alert.alert('Invalid Amount', 'Please enter a valid amount.');
       return;
     }
-    if (!category) {
+    if (type !== 'transfer' && !category) {
+      console.warn('[AddTransaction] Validation failed: Missing category');
       Alert.alert('Missing Category', 'Please select a category.');
       return;
     }
     if (!dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      console.warn('[AddTransaction] Validation failed: Invalid date format');
       Alert.alert('Invalid Date', 'Please use YYYY-MM-DD format.');
       return;
     }
     if (!userData?.familyId) {
+      console.error('[AddTransaction] Validation failed: No familyId found in userData', userData);
       Alert.alert('Error', 'Family data not found.');
       return;
     }
@@ -56,14 +70,22 @@ export default function AddTransactionScreen() {
         userData.familyId,
         type,
         Number(amount),
-        category,
+        type === 'transfer' ? 'Transfer' : category,
         userData.name,
         userData.uid,
         parsedDate,
-        note
+        note,
+        type === 'transfer' ? undefined : paymentMethod,
+        type === 'transfer' ? transferSource : undefined
       );
-      router.back();
+      console.log('[AddTransaction] Transaction saved successfully!');
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)/home');
+      }
     } catch (error: any) {
+      console.error('[AddTransaction] Failed to save transaction:', error);
       Alert.alert('Error', error.message);
     } finally {
       setLoading(false);
@@ -76,7 +98,16 @@ export default function AddTransactionScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.closeBtn}>
+        <Pressable 
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/(tabs)/home');
+            }
+          }} 
+          style={styles.closeBtn}
+        >
           <MaterialCommunityIcons name="close" size={28} color={themeColors.textPrimary} />
         </Pressable>
         <Text style={styles.headerTitle}>New Transaction</Text>
@@ -97,7 +128,7 @@ export default function AddTransactionScreen() {
             >
               <Text style={[styles.toggleText, type === 'expense' && styles.toggleTextActive]}>Expense</Text>
             </Pressable>
-            <View style={{ width: 12 }} />
+            <View style={{ width: 8 }} />
             <Pressable 
               style={({ pressed }) => [
                 styles.toggleBtn, 
@@ -108,7 +139,58 @@ export default function AddTransactionScreen() {
             >
               <Text style={[styles.toggleText, type === 'income' && styles.toggleTextActive]}>Income</Text>
             </Pressable>
+            <View style={{ width: 8 }} />
+            <Pressable 
+              style={({ pressed }) => [
+                styles.toggleBtn, 
+                type === 'transfer' && { borderColor: themeColors.textPrimary },
+                { transform: [{ scale: pressed ? 0.96 : 1 }] }
+              ]}
+              onPress={() => { setType('transfer'); setCategory('Transfer'); }}
+            >
+              <Text style={[styles.toggleText, type === 'transfer' && styles.toggleTextActive]}>Transfer</Text>
+            </Pressable>
           </View>
+
+          {/* Payment Method / Transfer Source Selector */}
+          <Text style={styles.sectionTitle}>
+            {type === 'transfer' ? 'Transfer From' : 'Payment Method'}
+          </Text>
+          <View style={styles.toggleContainer}>
+            <Pressable 
+              style={({ pressed }) => [
+                styles.toggleBtn, 
+                (type === 'transfer' ? transferSource : paymentMethod) === 'online' && { borderColor: themeColors.textPrimary },
+                { transform: [{ scale: pressed ? 0.96 : 1 }] }
+              ]}
+              onPress={() => type === 'transfer' ? setTransferSource('online') : setPaymentMethod('online')}
+            >
+              <MaterialCommunityIcons name="bank" size={16} color={(type === 'transfer' ? transferSource : paymentMethod) === 'online' ? themeColors.textPrimary : themeColors.textSecondary} style={{ marginBottom: 4 }} />
+              <Text style={[styles.toggleText, (type === 'transfer' ? transferSource : paymentMethod) === 'online' && styles.toggleTextActive]}>Online</Text>
+            </Pressable>
+            <View style={{ width: 12 }} />
+            <Pressable 
+              style={({ pressed }) => [
+                styles.toggleBtn, 
+                (type === 'transfer' ? transferSource : paymentMethod) === 'cash' && { borderColor: themeColors.textPrimary },
+                { transform: [{ scale: pressed ? 0.96 : 1 }] }
+              ]}
+              onPress={() => type === 'transfer' ? setTransferSource('cash') : setPaymentMethod('cash')}
+            >
+              <MaterialCommunityIcons name="cash-multiple" size={16} color={(type === 'transfer' ? transferSource : paymentMethod) === 'cash' ? themeColors.textPrimary : themeColors.textSecondary} style={{ marginBottom: 4 }} />
+              <Text style={[styles.toggleText, (type === 'transfer' ? transferSource : paymentMethod) === 'cash' && styles.toggleTextActive]}>Cash</Text>
+            </Pressable>
+          </View>
+
+          {/* Transfer Destination Readonly label */}
+          {type === 'transfer' && (
+            <View style={{ marginBottom: 24, padding: 12, backgroundColor: themeColors.surfaceHover, borderRadius: 12, alignItems: 'center' }}>
+              <MaterialCommunityIcons name="arrow-down" size={24} color={themeColors.textSecondary} style={{ marginBottom: 4 }} />
+              <Text style={{ color: themeColors.textSecondary, fontWeight: '600' }}>
+                Transfer To: {transferSource === 'online' ? 'Cash' : 'Online'}
+              </Text>
+            </View>
+          )}
 
           {/* Amount Input */}
           <Input
@@ -128,23 +210,27 @@ export default function AddTransactionScreen() {
           />
 
           {/* Categories Grid */}
-          <Text style={styles.sectionTitle}>Select Category</Text>
-          <View style={styles.categoryGrid}>
-            {activeCategories.map(cat => (
-              <Pressable 
-                key={cat.id} 
-                style={({ pressed }) => [
-                  styles.categoryChip, 
-                  category === cat.name && { borderColor: themeColors.textPrimary, backgroundColor: themeColors.surfaceHover },
-                  { transform: [{ scale: pressed ? 0.92 : 1 }] }
-                ]}
-                onPress={() => setCategory(cat.name)}
-              >
-                <MaterialCommunityIcons name={cat.icon} size={28} color={category === cat.name ? themeColors.textPrimary : cat.color} />
-                <Text style={[styles.categoryName, category === cat.name && { color: themeColors.textPrimary }]}>{cat.name}</Text>
-              </Pressable>
-            ))}
-          </View>
+          {type !== 'transfer' && (
+            <>
+              <Text style={styles.sectionTitle}>Select Category</Text>
+              <View style={styles.categoryGrid}>
+                {activeCategories.map(cat => (
+                  <Pressable 
+                    key={cat.id} 
+                    style={({ pressed }) => [
+                      styles.categoryChip, 
+                      category === cat.name && { borderColor: themeColors.textPrimary, backgroundColor: themeColors.surfaceHover },
+                      { transform: [{ scale: pressed ? 0.92 : 1 }] }
+                    ]}
+                    onPress={() => setCategory(cat.name)}
+                  >
+                    <MaterialCommunityIcons name={cat.icon} size={28} color={category === cat.name ? themeColors.textPrimary : cat.color} />
+                    <Text style={[styles.categoryName, category === cat.name && { color: themeColors.textPrimary }]}>{cat.name}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          )}
 
           {/* Note Input */}
           <Input

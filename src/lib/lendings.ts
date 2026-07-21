@@ -1,5 +1,6 @@
 import { collection, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
+import { PaymentMethod } from './transactions';
 
 export type LendingType = 'lent' | 'borrowed';
 export type LendingStatus = 'pending' | 'settled';
@@ -15,6 +16,7 @@ export interface Lending {
   status: LendingStatus;
   date: string; // YYYY-MM-DD
   createdAt: number;
+  paymentMethod?: PaymentMethod;
 }
 
 export const addLending = async (
@@ -23,7 +25,8 @@ export const addLending = async (
   amount: number,
   personName: string,
   date: Date,
-  note?: string
+  note?: string,
+  paymentMethod?: PaymentMethod
 ) => {
   const lendingId = `lnd_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   
@@ -32,18 +35,20 @@ export const addLending = async (
   const dayStr = String(date.getDate()).padStart(2, '0');
   const formattedDate = `${year}-${monthStr}-${dayStr}`;
 
-  const newLending: Lending = {
+  const newLending: any = {
     id: lendingId,
     familyId,
     type,
     amount,
     settledAmount: 0,
     personName,
-    note,
     status: 'pending',
     date: formattedDate,
     createdAt: Date.now(),
   };
+
+  if (note !== undefined) newLending.note = note;
+  if (paymentMethod !== undefined) newLending.paymentMethod = paymentMethod;
 
   await setDoc(doc(db, 'lendings', lendingId), newLending);
   return lendingId;

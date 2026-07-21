@@ -19,6 +19,7 @@ export default function AddLendingScreen() {
   const router = useRouter();
   
   const [type, setType] = useState<LendingType>('lent');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'online'>('online');
   const [amount, setAmount] = useState('');
   const [personName, setPersonName] = useState('');
   const [note, setNote] = useState('');
@@ -30,19 +31,31 @@ export default function AddLendingScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
+    console.log('[AddLending] Saving lending record...', {
+      amount,
+      type,
+      personName,
+      dateStr,
+      userData
+    });
+
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      console.warn('[AddLending] Validation failed: Invalid amount');
       Alert.alert('Invalid Amount', 'Please enter a valid amount.');
       return;
     }
     if (!personName.trim()) {
+      console.warn('[AddLending] Validation failed: Missing person name');
       Alert.alert('Missing Name', 'Please enter the name of the person.');
       return;
     }
     if (!dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      console.warn('[AddLending] Validation failed: Invalid date format');
       Alert.alert('Invalid Date', 'Please use YYYY-MM-DD format.');
       return;
     }
     if (!userData?.familyId) {
+      console.error('[AddLending] Validation failed: No familyId found in userData', userData);
       Alert.alert('Error', 'Family data not found.');
       return;
     }
@@ -56,10 +69,17 @@ export default function AddLendingScreen() {
         Number(amount),
         personName.trim(),
         parsedDate,
-        note
+        note,
+        paymentMethod
       );
-      router.back();
+      console.log('[AddLending] Lending record saved successfully!');
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)/home');
+      }
     } catch (error: any) {
+      console.error('[AddLending] Failed to save lending record:', error);
       Alert.alert('Error', error.message);
     } finally {
       setLoading(false);
@@ -76,7 +96,13 @@ export default function AddLendingScreen() {
         <Text style={styles.headerTitle}>Add Record</Text>
         <Pressable 
           style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.5 }]} 
-          onPress={() => router.back()}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/(tabs)/home');
+            }
+          }}
         >
           <MaterialCommunityIcons name="close" size={24} color={themeColors.textSecondary} />
         </Pressable>
@@ -104,6 +130,33 @@ export default function AddLendingScreen() {
             onPress={() => setType('borrowed')}
           >
             <Text style={[styles.toggleText, type === 'borrowed' && { color: themeColors.textPrimary }]}>I Took Money</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Payment Method Selector */}
+        <View style={[styles.toggleContainer, { marginBottom: 32 }]}>
+          <TouchableOpacity 
+            style={[
+              styles.toggleBtn, 
+              paymentMethod === 'online' && { borderColor: themeColors.textPrimary },
+              { flexDirection: 'row', justifyContent: 'center' }
+            ]}
+            onPress={() => setPaymentMethod('online')}
+          >
+            <MaterialCommunityIcons name="bank" size={16} color={paymentMethod === 'online' ? themeColors.textPrimary : themeColors.textSecondary} style={{ marginRight: 6 }} />
+            <Text style={[styles.toggleText, paymentMethod === 'online' && { color: themeColors.textPrimary }]}>Online</Text>
+          </TouchableOpacity>
+          <View style={{ width: 12 }} />
+          <TouchableOpacity 
+            style={[
+              styles.toggleBtn, 
+              paymentMethod === 'cash' && { borderColor: themeColors.textPrimary },
+              { flexDirection: 'row', justifyContent: 'center' }
+            ]}
+            onPress={() => setPaymentMethod('cash')}
+          >
+            <MaterialCommunityIcons name="cash-multiple" size={16} color={paymentMethod === 'cash' ? themeColors.textPrimary : themeColors.textSecondary} style={{ marginRight: 6 }} />
+            <Text style={[styles.toggleText, paymentMethod === 'cash' && { color: themeColors.textPrimary }]}>Cash</Text>
           </TouchableOpacity>
         </View>
 

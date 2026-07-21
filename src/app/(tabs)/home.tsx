@@ -4,8 +4,9 @@ import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, Pressable
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-import { logoutUser } from '../../lib/auth';
 import { useTransactions } from '../../hooks/useTransactions';
+import { useLendings } from '../../hooks/useLendings';
+import { useFamilyData } from '../../hooks/useFamilyData';
 import { deleteTransaction } from '../../lib/transactions';
 import { BalanceCard } from '../../components/home/BalanceCard';
 import { BudgetWidget } from '../../components/home/BudgetWidget';
@@ -20,19 +21,45 @@ export default function HomeScreen() {
   const { userData } = useAuth();
   const router = useRouter();
   
-  // By passing no month, it fetches all transactions for simplicity right now
-  const { transactions, loading } = useTransactions();
+  const { transactions, loading: txLoading } = useTransactions();
+  const { lendings, loading: lnLoading } = useLendings();
+  const { family, loading: fmLoading } = useFamilyData();
 
-  // Calculate totals
-  const totalIncome = transactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
-    
-  const totalExpense = transactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
-    
-  const balance = totalIncome - totalExpense;
+  // Helper to calculate total given an array and predicate
+  const sum = (arr: any[], predicate: (item: any) => boolean) => 
+    arr.filter(predicate).reduce((acc, item) => acc + item.amount, 0);
+
+  // Income/Expense total
+  const totalIncome = sum(transactions, t => t.type === 'income');
+  const totalExpense = sum(transactions, t => t.type === 'expense');
+
+  // Initial balances
+  const initCash = family?.initialCashBalance || 0;
+  const initOnline = family?.initialOnlineBalance || 0;
+
+  // Wallet Specific Transactions
+  const incomeCash = sum(transactions, t => t.type === 'income' && t.paymentMethod === 'cash');
+  const expenseCash = sum(transactions, t => t.type === 'expense' && t.paymentMethod === 'cash');
+  const transferToCash = sum(transactions, t => t.type === 'transfer' && t.transferSource === 'online');
+  const transferFromCash = sum(transactions, t => t.type === 'transfer' && t.transferSource === 'cash');
+  
+  const incomeOnline = sum(transactions, t => t.type === 'income' && t.paymentMethod === 'online');
+  const expenseOnline = sum(transactions, t => t.type === 'expense' && t.paymentMethod === 'online');
+
+  // Wallet Specific Lendings
+  const lentCash = sum(lendings, l => l.type === 'lent' && l.paymentMethod === 'cash');
+  const lentCashSettled = lendings.filter(l => l.type === 'lent' && l.paymentMethod === 'cash').reduce((acc, l) => acc + (l.settledAmount || 0), 0);
+  const borrowedCash = sum(lendings, l => l.type === 'borrowed' && l.paymentMethod === 'cash');
+  const borrowedCashSettled = lendings.filter(l => l.type === 'borrowed' && l.paymentMethod === 'cash').reduce((acc, l) => acc + (l.settledAmount || 0), 0);
+
+  const lentOnline = sum(lendings, l => l.type === 'lent' && l.paymentMethod === 'online');
+  const lentOnlineSettled = lendings.filter(l => l.type === 'lent' && l.paymentMethod === 'online').reduce((acc, l) => acc + (l.settledAmount || 0), 0);
+  const borrowedOnline = sum(lendings, l => l.type === 'borrowed' && l.paymentMethod === 'online');
+  const borrowedOnlineSettled = lendings.filter(l => l.type === 'borrowed' && l.paymentMethod === 'online').reduce((acc, l) => acc + (l.settledAmount || 0), 0);
+
+  const cashBalance = initCash + incomeCash - expenseCash + transferToCash - transferFromCash - lentCash + lentCashSettled + borrowedCash - borrowedCashSettled;
+  const onlineBalance = initOnline + incomeOnline - expenseOnline + transferFromCash - transferToCash - lentOnline + lentOnlineSettled + borrowedOnline - borrowedOnlineSettled;
+  const totalBalance = cashBalance + onlineBalance;
 
   const handleDelete = (id: string) => {
     Alert.alert('Delete Transaction', 'Are you sure you want to delete this?', [
@@ -41,7 +68,7 @@ export default function HomeScreen() {
     ]);
   };
 
-  if (loading) {
+  if (txLoading || lnLoading || fmLoading) {
     return (
       <View style={[styles.container, { justifyContent: 'center' }]}>
         <ActivityIndicator size="large" color={themeColors.primary} />
@@ -60,7 +87,13 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <BalanceCard balance={balance} income={totalIncome} expense={totalExpense} />
+      <BalanceCard 
+        totalBalance={totalBalance} 
+        cashBalance={cashBalance} 
+        onlineBalance={onlineBalance} 
+        income={totalIncome} 
+        expense={totalExpense} 
+      />
 
       <BudgetWidget />
 

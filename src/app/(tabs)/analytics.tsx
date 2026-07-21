@@ -12,7 +12,8 @@ LogBox.ignoreLogs(['Invalid DOM property `transform-origin`']);
 if (Platform.OS === 'web') {
   const originalConsoleError = console.error;
   console.error = (...args: any[]) => {
-    if (typeof args[0] === 'string' && args[0].includes('transform-origin')) {
+    const fullMessage = args.map(arg => String(arg)).join(' ');
+    if (fullMessage.includes('transform-origin')) {
       return; // Suppress React DOM property warning on Web
     }
     originalConsoleError(...args);

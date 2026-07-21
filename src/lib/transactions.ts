@@ -1,7 +1,8 @@
 import { collection, doc, setDoc, deleteDoc, query, where, orderBy, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 
-export type TransactionType = 'expense' | 'income';
+export type TransactionType = 'expense' | 'income' | 'transfer';
+export type PaymentMethod = 'cash' | 'online';
 
 export interface Transaction {
   id: string;
@@ -15,6 +16,8 @@ export interface Transaction {
   date: string; // YYYY-MM-DD
   month: string; // YYYY-MM
   createdAt: number;
+  paymentMethod?: PaymentMethod; // Used for expense/income
+  transferSource?: PaymentMethod; // Used for transfer (e.g. 'online' means online -> cash)
 }
 
 export const addTransaction = async (
@@ -25,7 +28,9 @@ export const addTransaction = async (
   memberName: string,
   memberId: string,
   date: Date,
-  note?: string
+  note?: string,
+  paymentMethod?: PaymentMethod,
+  transferSource?: PaymentMethod
 ) => {
   const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   
@@ -37,19 +42,22 @@ export const addTransaction = async (
   const formattedDate = `${year}-${monthStr}-${dayStr}`;
   const formattedMonth = `${year}-${monthStr}`;
 
-  const newTransaction: Transaction = {
+  const newTransaction: any = {
     id: transactionId,
     familyId,
     type,
     amount,
     category,
-    note,
     memberName,
     memberId,
     date: formattedDate,
     month: formattedMonth,
     createdAt: Date.now(),
   };
+
+  if (note !== undefined) newTransaction.note = note;
+  if (paymentMethod !== undefined) newTransaction.paymentMethod = paymentMethod;
+  if (transferSource !== undefined) newTransaction.transferSource = transferSource;
 
   await setDoc(doc(db, 'transactions', transactionId), newTransaction);
   return transactionId;

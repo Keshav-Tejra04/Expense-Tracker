@@ -17,14 +17,36 @@ export function TransactionCard({ transaction, onPress }: TransactionCardProps) 
   const styles = getStyles(themeColors);
 
   const isExpense = transaction.type === 'expense';
-  const amountColor = isExpense ? themeColors.textPrimary : themeColors.income;
-  const prefix = isExpense ? '-' : '+';
+  const isIncome = transaction.type === 'income';
+  const isTransfer = transaction.type === 'transfer';
+  
+  const amountColor = isExpense 
+    ? themeColors.textPrimary 
+    : isIncome 
+      ? themeColors.income 
+      : themeColors.textSecondary;
+      
+  const prefix = isExpense 
+    ? '-' 
+    : isIncome 
+      ? '+' 
+      : '⇄ ';
   
   // Find category to get icon and color
   const allCategories = [...defaultExpenseCategories, ...defaultIncomeCategories];
   const categoryConfig = allCategories.find(c => c.name === transaction.category);
-  const iconName = categoryConfig?.icon || 'dots-horizontal';
-  const iconColor = categoryConfig?.color || themeColors.textSecondary;
+  
+  let iconName = categoryConfig?.icon || 'dots-horizontal';
+  let iconColor = categoryConfig?.color || themeColors.textSecondary;
+  let displayCategory = transaction.category;
+
+  if (isTransfer) {
+    iconName = 'swap-horizontal';
+    iconColor = '#6366F1'; // Nice indigo color for transfers
+    const fromStr = transaction.transferSource === 'online' ? 'Online' : 'Cash';
+    const toStr = transaction.transferSource === 'online' ? 'Cash' : 'Online';
+    displayCategory = `Transfer: ${fromStr} ➔ ${toStr}`;
+  }
 
   return (
     <Pressable 
@@ -43,7 +65,7 @@ export function TransactionCard({ transaction, onPress }: TransactionCardProps) 
       </View>
       
       <View style={styles.details}>
-        <Text style={styles.category} numberOfLines={1}>{transaction.category}</Text>
+        <Text style={styles.category} numberOfLines={1}>{displayCategory}</Text>
         <Text style={styles.note} numberOfLines={1}>
           {transaction.note ? transaction.note : `By ${transaction.memberName}`}
         </Text>
