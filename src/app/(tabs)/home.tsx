@@ -97,18 +97,24 @@ export default function HomeScreen() {
 
       <BudgetWidget />
 
+      <Pressable 
+        onPress={() => router.push('/add-transaction')}
+        style={({ pressed }) => [
+          styles.addTransactionBtn,
+          { 
+            backgroundColor: pressed ? themeColors.surfaceHover : themeColors.surface,
+            borderColor: themeColors.border,
+            borderWidth: 1.5,
+            transform: [{ scale: pressed ? 0.98 : 1 }],
+          }
+        ]}
+      >
+        <MaterialCommunityIcons name="plus" size={22} color={themeColors.textPrimary} style={{ marginRight: 8 }} />
+        <Text style={[styles.addTransactionBtnText, { color: themeColors.textPrimary }]}>Add New Transaction</Text>
+      </Pressable>
+
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Recent Transactions</Text>
-        <Pressable 
-          onPress={() => router.push('/add-transaction')}
-          style={({ pressed }) => [
-            styles.addIconBtn,
-            { transform: [{ scale: pressed ? 0.9 : 1 }] }
-          ]}
-        >
-          <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
-          <Text style={styles.addIconText}>Add</Text>
-        </Pressable>
       </View>
 
       <View style={styles.transactionList}>
@@ -179,21 +185,24 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     color: themeColors.textPrimary,
     letterSpacing: 0.3,
   },
-  addIconBtn: {
+  addTransactionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: themeColors.textPrimary,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    justifyContent: 'center',
+    paddingVertical: 14,
     borderRadius: 100,
+    marginTop: 16,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  addIconText: {
-    color: themeColors.textPrimary,
+  addTransactionBtnText: {
+    fontSize: 16,
     fontWeight: '800',
-    fontSize: 13,
-    marginLeft: 4,
+    letterSpacing: 0.3,
   },
   transactionList: {
     backgroundColor: themeColors.surface,

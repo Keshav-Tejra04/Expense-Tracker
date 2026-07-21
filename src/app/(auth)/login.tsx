@@ -42,7 +42,7 @@ export default function LoginScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Family Finance</Text>
+          <Text style={styles.title}>Ghar Kharch</Text>
           <Text style={styles.subtitle}>Welcome back!</Text>
         </View>
 

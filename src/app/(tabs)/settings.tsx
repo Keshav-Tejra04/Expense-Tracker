@@ -147,13 +147,13 @@ export default function SettingsScreen() {
               label="Current Cash Balance (₹)" 
               value={cashBalance} 
               onChangeText={setCashBalance} 
-              keyboardType="numeric" 
+              keyboardType="default" 
             />
             <Input 
               label="Current Online Balance (₹)" 
               value={onlineBalance} 
               onChangeText={setOnlineBalance} 
-              keyboardType="numeric" 
+              keyboardType="default" 
             />
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
               <Button title="Cancel" variant="secondary" onPress={() => setIsEditingBalances(false)} style={{ flex: 1 }} />
@@ -222,7 +222,7 @@ export default function SettingsScreen() {
         style={styles.logoutBtn}
       />
       
-      <Text style={styles.version}>Family Finance v1.0.0</Text>
+      <Text style={styles.version}>Ghar Kharch v1.0.0</Text>
     </ScrollView>
   );
 }

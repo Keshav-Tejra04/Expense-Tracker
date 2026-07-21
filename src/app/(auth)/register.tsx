@@ -137,7 +137,7 @@ export default function RegisterScreen() {
                     placeholder="0"
                     value={initialCashBalance}
                     onChangeText={setInitialCashBalance}
-                    keyboardType="numeric"
+                    keyboardType="default"
                   />
                 </View>
                 <View style={{ flex: 1, marginLeft: 8 }}>
@@ -146,7 +146,7 @@ export default function RegisterScreen() {
                     placeholder="0"
                     value={initialOnlineBalance}
                     onChangeText={setInitialOnlineBalance}
-                    keyboardType="numeric"
+                    keyboardType="default"
                   />
                 </View>
               </View>

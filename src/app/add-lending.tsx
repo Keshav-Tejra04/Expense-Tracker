@@ -9,6 +9,8 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { colors } from '../constants/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { formatIndianNumber, parseIndianNumber } from '../lib/formatters';
+import { DatePicker } from '../components/ui/DatePicker';
 
 export default function AddLendingScreen() {
   const { theme } = useTheme();
@@ -39,7 +41,9 @@ export default function AddLendingScreen() {
       userData
     });
 
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+    const parsedAmount = parseIndianNumber(amount);
+
+    if (parsedAmount <= 0) {
       console.warn('[AddLending] Validation failed: Invalid amount');
       Alert.alert('Invalid Amount', 'Please enter a valid amount.');
       return;
@@ -66,7 +70,7 @@ export default function AddLendingScreen() {
       await addLending(
         userData.familyId,
         type,
-        Number(amount),
+        parsedAmount,
         personName.trim(),
         parsedDate,
         note,
@@ -168,8 +172,8 @@ export default function AddLendingScreen() {
             placeholder="0"
             placeholderTextColor={themeColors.border}
             value={amount}
-            onChangeText={setAmount}
-            keyboardType="numeric"
+            onChangeText={(val) => setAmount(formatIndianNumber(val))}
+            keyboardType="default"
             autoFocus
           />
         </View>
@@ -183,10 +187,10 @@ export default function AddLendingScreen() {
             onChangeText={setPersonName}
           />
 
-          <Input
-            label="Date (YYYY-MM-DD)"
+          <DatePicker
+            label="Date"
             value={dateStr}
-            onChangeText={setDateStr}
+            onChange={setDateStr}
           />
 
           <Input

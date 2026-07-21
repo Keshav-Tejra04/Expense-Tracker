@@ -9,6 +9,8 @@ import { defaultExpenseCategories, defaultIncomeCategories } from '../constants/
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { colors } from '../constants/colors';
+import { formatIndianNumber, parseIndianNumber } from '../lib/formatters';
+import { DatePicker } from '../components/ui/DatePicker';
 
 export default function AddTransactionScreen() {
   const { theme } = useTheme();
@@ -42,7 +44,9 @@ export default function AddTransactionScreen() {
       userData
     });
 
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+    const parsedAmount = parseIndianNumber(amount);
+
+    if (parsedAmount <= 0) {
       console.warn('[AddTransaction] Validation failed: Invalid amount');
       Alert.alert('Invalid Amount', 'Please enter a valid amount.');
       return;
@@ -69,7 +73,7 @@ export default function AddTransactionScreen() {
       await addTransaction(
         userData.familyId,
         type,
-        Number(amount),
+        parsedAmount,
         type === 'transfer' ? 'Transfer' : category,
         userData.name,
         userData.uid,
@@ -197,16 +201,16 @@ export default function AddTransactionScreen() {
             label="Amount (₹)"
             placeholder="0"
             value={amount}
-            onChangeText={setAmount}
-            keyboardType="numeric"
+            onChangeText={(val) => setAmount(formatIndianNumber(val))}
+            keyboardType="default"
             style={styles.amountInput}
           />
 
           {/* Date Input */}
-          <Input
-            label="Date (YYYY-MM-DD)"
+          <DatePicker
+            label="Date"
             value={dateStr}
-            onChangeText={setDateStr}
+            onChange={setDateStr}
           />
 
           {/* Categories Grid */}
