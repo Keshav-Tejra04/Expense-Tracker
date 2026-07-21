@@ -9,6 +9,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Suppress known react-native-chart-kit web warning
 LogBox.ignoreLogs(['Invalid DOM property `transform-origin`']);
+if (Platform.OS === 'web') {
+  const originalConsoleError = console.error;
+  console.error = (...args: any[]) => {
+    if (typeof args[0] === 'string' && args[0].includes('transform-origin')) {
+      return; // Suppress React DOM property warning on Web
+    }
+    originalConsoleError(...args);
+  };
+}
 import { Card } from '../../components/ui/Card';
 
 const screenWidth = Dimensions.get('window').width;

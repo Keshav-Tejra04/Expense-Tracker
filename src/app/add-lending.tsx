@@ -84,34 +84,34 @@ export default function AddLendingScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
-        {/* Toggle Buttons (Transparent style) */}
+        {/* Toggle Buttons (Monochrome Transparent style) */}
         <View style={styles.toggleContainer}>
           <TouchableOpacity 
             style={[
               styles.toggleBtn, 
-              type === 'lent' && { backgroundColor: `${themeColors.expense}20`, borderColor: themeColors.expense }
+              type === 'lent' && { borderColor: themeColors.textPrimary }
             ]}
             onPress={() => setType('lent')}
           >
-            <Text style={[styles.toggleText, type === 'lent' && { color: themeColors.expense }]}>I Gave Money</Text>
+            <Text style={[styles.toggleText, type === 'lent' && { color: themeColors.textPrimary }]}>I Gave Money</Text>
           </TouchableOpacity>
           <View style={{ width: 12 }} />
           <TouchableOpacity 
             style={[
               styles.toggleBtn, 
-              type === 'borrowed' && { backgroundColor: `${themeColors.income}20`, borderColor: themeColors.income }
+              type === 'borrowed' && { borderColor: themeColors.textPrimary }
             ]}
             onPress={() => setType('borrowed')}
           >
-            <Text style={[styles.toggleText, type === 'borrowed' && { color: themeColors.income }]}>I Took Money</Text>
+            <Text style={[styles.toggleText, type === 'borrowed' && { color: themeColors.textPrimary }]}>I Took Money</Text>
           </TouchableOpacity>
         </View>
 
         {/* Large Amount Input */}
         <View style={styles.amountSection}>
-          <Text style={[styles.currencySymbol, { color: type === 'lent' ? themeColors.expense : themeColors.income }]}>₹</Text>
+          <Text style={[styles.currencySymbol, { color: themeColors.textPrimary }]}>₹</Text>
           <TextInput
-            style={[styles.largeAmountInput, { color: type === 'lent' ? themeColors.expense : themeColors.income }]}
+            style={[styles.largeAmountInput, { color: themeColors.textPrimary }]}
             placeholder="0"
             placeholderTextColor={themeColors.border}
             value={amount}

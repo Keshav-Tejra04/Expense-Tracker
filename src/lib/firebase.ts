@@ -1,6 +1,10 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeAuth, getAuth } from 'firebase/auth';
+// @ts-ignore - Ignore TS error for this specific export (it exists at runtime for React Native)
+import { getReactNativePersistence } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFirestore } from 'firebase/firestore';
+import { Platform } from 'react-native';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiqMLlFqCzfwhSMhvPCQC6TEvWMy9Woe8",
@@ -15,8 +19,18 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Auth natively (automatically handles web persistence)
-const auth = getAuth(app);
+let auth: any;
+
+if (Platform.OS === 'web') {
+  // Web handles persistence automatically out of the box
+  auth = getAuth(app);
+} else {
+  // Native apps require AsyncStorage for permanent persistence
+  // @ts-ignore
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage)
+  });
+}
 
 // Initialize Firestore
 const db = getFirestore(app);

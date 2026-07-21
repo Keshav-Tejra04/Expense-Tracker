@@ -84,84 +84,84 @@ export default function AddTransactionScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        
-        {/* Type Toggle */}
-        <View style={styles.toggleContainer}>
-          <Pressable 
-            style={({ pressed }) => [
-              styles.toggleBtn, 
-              type === 'expense' && { backgroundColor: themeColors.expense, borderColor: themeColors.expense },
-              { transform: [{ scale: pressed ? 0.96 : 1 }] }
-            ]}
-            onPress={() => { setType('expense'); setCategory(''); }}
-          >
-            <Text style={[styles.toggleText, type === 'expense' && styles.toggleTextActive]}>Expense</Text>
-          </Pressable>
-          <View style={{ width: 12 }} />
-          <Pressable 
-            style={({ pressed }) => [
-              styles.toggleBtn, 
-              type === 'income' && { backgroundColor: themeColors.income, borderColor: themeColors.income },
-              { transform: [{ scale: pressed ? 0.96 : 1 }] }
-            ]}
-            onPress={() => { setType('income'); setCategory(''); }}
-          >
-            <Text style={[styles.toggleText, type === 'income' && styles.toggleTextActive]}>Income</Text>
-          </Pressable>
-        </View>
-
-        {/* Amount Input */}
-        <Input
-          label="Amount (₹)"
-          placeholder="0"
-          value={amount}
-          onChangeText={setAmount}
-          keyboardType="numeric"
-          style={styles.amountInput}
-        />
-
-        {/* Date Input */}
-        <Input
-          label="Date (YYYY-MM-DD)"
-          value={dateStr}
-          onChangeText={setDateStr}
-        />
-
-        {/* Categories Grid */}
-        <Text style={styles.sectionTitle}>Select Category</Text>
-        <View style={styles.categoryGrid}>
-          {activeCategories.map(cat => (
+        <View style={styles.formCard}>
+          {/* Type Toggle */}
+          <View style={styles.toggleContainer}>
             <Pressable 
-              key={cat.id} 
               style={({ pressed }) => [
-                styles.categoryChip, 
-                category === cat.name && { borderColor: cat.color, backgroundColor: `${cat.color}15` },
-                { transform: [{ scale: pressed ? 0.92 : 1 }] }
+                styles.toggleBtn, 
+                type === 'expense' && { borderColor: themeColors.textPrimary },
+                { transform: [{ scale: pressed ? 0.96 : 1 }] }
               ]}
-              onPress={() => setCategory(cat.name)}
+              onPress={() => { setType('expense'); setCategory(''); }}
             >
-              <MaterialCommunityIcons name={cat.icon} size={28} color={cat.color} />
-              <Text style={styles.categoryName} numberOfLines={1}>{cat.name}</Text>
+              <Text style={[styles.toggleText, type === 'expense' && styles.toggleTextActive]}>Expense</Text>
             </Pressable>
-          ))}
+            <View style={{ width: 12 }} />
+            <Pressable 
+              style={({ pressed }) => [
+                styles.toggleBtn, 
+                type === 'income' && { borderColor: themeColors.textPrimary },
+                { transform: [{ scale: pressed ? 0.96 : 1 }] }
+              ]}
+              onPress={() => { setType('income'); setCategory(''); }}
+            >
+              <Text style={[styles.toggleText, type === 'income' && styles.toggleTextActive]}>Income</Text>
+            </Pressable>
+          </View>
+
+          {/* Amount Input */}
+          <Input
+            label="Amount (₹)"
+            placeholder="0"
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="numeric"
+            style={styles.amountInput}
+          />
+
+          {/* Date Input */}
+          <Input
+            label="Date (YYYY-MM-DD)"
+            value={dateStr}
+            onChangeText={setDateStr}
+          />
+
+          {/* Categories Grid */}
+          <Text style={styles.sectionTitle}>Select Category</Text>
+          <View style={styles.categoryGrid}>
+            {activeCategories.map(cat => (
+              <Pressable 
+                key={cat.id} 
+                style={({ pressed }) => [
+                  styles.categoryChip, 
+                  category === cat.name && { borderColor: themeColors.textPrimary, backgroundColor: themeColors.surfaceHover },
+                  { transform: [{ scale: pressed ? 0.92 : 1 }] }
+                ]}
+                onPress={() => setCategory(cat.name)}
+              >
+                <MaterialCommunityIcons name={cat.icon} size={28} color={category === cat.name ? themeColors.textPrimary : cat.color} />
+                <Text style={[styles.categoryName, category === cat.name && { color: themeColors.textPrimary }]}>{cat.name}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {/* Note Input */}
+          <Input
+            label="Note (Optional)"
+            placeholder="What was this for?"
+            value={note}
+            onChangeText={setNote}
+          />
+
+          {/* Save Button */}
+          <Button 
+            title="Save Transaction" 
+            onPress={handleSave} 
+            isLoading={loading}
+            style={styles.saveBtn}
+          />
         </View>
-
-        {/* Note Input */}
-        <Input
-          label="Note (Optional)"
-          placeholder="What was this for?"
-          value={note}
-          onChangeText={setNote}
-        />
-
-        {/* Save Button */}
-        <Button 
-          title="Save Transaction" 
-          onPress={handleSave} 
-          isLoading={loading}
-          style={styles.saveBtn}
-        />
-        
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -194,30 +194,39 @@ const getStyles = (themeColors: any) => StyleSheet.create({
   },
   scrollContent: {
     padding: 24,
+    paddingTop: 8,
     paddingBottom: 48,
+  },
+  formCard: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: themeColors.border,
+    borderRadius: 32,
+    padding: 24,
   },
   toggleContainer: {
     flexDirection: 'row',
-    marginBottom: 32,
+    marginBottom: 24,
     backgroundColor: themeColors.surfaceHover,
     padding: 6,
     borderRadius: 100,
   },
   toggleBtn: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: 100,
     alignItems: 'center',
     backgroundColor: 'transparent',
-    borderWidth: 0,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   toggleText: {
     color: themeColors.textSecondary,
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: 14,
   },
   toggleTextActive: {
-    color: '#FFFFFF',
+    color: themeColors.textPrimary,
   },
   amountInput: {
     fontSize: 32,
@@ -225,10 +234,10 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     letterSpacing: -1,
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: themeColors.textSecondary,
-    marginTop: 16,
-    marginBottom: 20,
+    marginTop: 12,
+    marginBottom: 16,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -237,29 +246,29 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   categoryChip: {
     width: '31%',
-    aspectRatio: 1,
-    backgroundColor: themeColors.surface,
-    borderRadius: 24,
+    aspectRatio: 1.2,
+    backgroundColor: 'transparent',
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: themeColors.border,
     padding: 8,
   },
   categoryName: {
     color: themeColors.textPrimary,
-    fontSize: 12,
-    marginTop: 8,
+    fontSize: 11,
+    marginTop: 6,
     fontWeight: '600',
     textAlign: 'center',
   },
   saveBtn: {
-    marginTop: 32,
-    marginBottom: 24,
+    marginTop: 16,
+    marginBottom: 8,
   },
 });
