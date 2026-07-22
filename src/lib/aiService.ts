@@ -6,6 +6,7 @@ export interface ParsedAIExpense {
   category: string;
   paymentMethod: 'cash' | 'online';
   note: string;
+  date?: string; // YYYY-MM-DD if past date mentioned (e.g. yesterday, kal, 2 days ago)
 }
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
@@ -21,9 +22,11 @@ export async function parseExpenseWithAI(userInput: string): Promise<ParsedAIExp
     try {
       const expenseCatNames = defaultExpenseCategories.map(c => c.name).join(', ');
       const incomeCatNames = defaultIncomeCategories.map(c => c.name).join(', ');
+      const todayISO = new Date().toISOString().split('T')[0];
 
       const prompt = `
 You are an intelligent financial assistant for an Indian family expense tracker app called "Ghar Kharch".
+Today's date is: ${todayISO}.
 Given this user sentence in English, Hindi, or Hinglish: "${cleanInput}"
 
 Extract the structured details and return ONLY a valid JSON object matching this exact TypeScript structure:
@@ -32,7 +35,8 @@ Extract the structured details and return ONLY a valid JSON object matching this
   "amount": number (positive numeric value),
   "category": string (Must pick the best matching category from expense list: [${expenseCatNames}] or income list: [${incomeCatNames}], or "Transfer" if type is transfer),
   "paymentMethod": "cash" | "online" (detect if user mentioned cash/gpay/phonepe/paytm/online/bank/card),
-  "note": string (brief summary of what the transaction was for)
+  "note": string (brief summary of what the transaction was for),
+  "date": string (ISO YYYY-MM-DD format ONLY IF user mentions a specific past date like "yesterday", "kal", "2 days ago", "parso", "last night". Otherwise omit or set null)
 }
 
 CRITICAL RULES FOR TYPE DETERMINATION (Income vs Expense vs Transfer):
@@ -97,6 +101,7 @@ Output strictly raw JSON, no markdown code blocks.
             category: parsed.category || (parsed.type === 'income' ? 'Other' : 'Other'),
             paymentMethod: parsed.paymentMethod === 'cash' ? 'cash' : 'online',
             note: parsed.note || cleanInput,
+            date: parsed.date || undefined,
           };
         }
       }
@@ -186,11 +191,25 @@ function fallbackLocalParser(text: string): ParsedAIExpense {
     category = 'Transfer';
   }
 
+  // 5. Detect Date (e.g. yesterday, kal, parso, 2 days ago)
+  let date: string | undefined = undefined;
+  const today = new Date();
+  if (lower.includes('yesterday') || lower.includes('kal') || lower.includes('last night')) {
+    const yest = new Date(today);
+    yest.setDate(today.getDate() - 1);
+    date = yest.toISOString().split('T')[0];
+  } else if (lower.includes('parso') || lower.includes('2 days ago')) {
+    const parso = new Date(today);
+    parso.setDate(today.getDate() - 2);
+    date = parso.toISOString().split('T')[0];
+  }
+
   return {
     type,
     amount,
     category,
     paymentMethod,
     note: text,
+    date,
   };
 }

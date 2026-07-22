@@ -82,93 +82,116 @@ export default function HomeScreen() {
   const recentTransactions = transactions.slice(0, 10);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Hello, {userData?.name}</Text>
-          <Text style={styles.subtitle}>Here is your family summary</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>Hello, {userData?.name}</Text>
+            <Text style={styles.subtitle}>Here is your family summary</Text>
+          </View>
+          <Pressable
+            onPress={() => setAiModalVisible(true)}
+            style={({ pressed }) => [
+              styles.voiceQuickHeaderBtn,
+              pressed && { opacity: 0.85, transform: [{ scale: 0.95 }] }
+            ]}
+          >
+            <MaterialCommunityIcons name="microphone" size={22} color={theme === 'dark' ? '#000000' : '#FFFFFF'} />
+            <Text style={[styles.voiceQuickHeaderBtnText, { color: theme === 'dark' ? '#000000' : '#FFFFFF' }]}>Voice</Text>
+          </Pressable>
         </View>
-      </View>
 
-      <BalanceCard 
-        totalBalance={totalBalance} 
-        cashBalance={cashBalance} 
-        onlineBalance={onlineBalance} 
-        income={totalIncome} 
-        expense={totalExpense} 
-      />
+        <BalanceCard 
+          totalBalance={totalBalance} 
+          cashBalance={cashBalance} 
+          onlineBalance={onlineBalance} 
+          income={totalIncome} 
+          expense={totalExpense} 
+        />
 
-      <BudgetWidget />
+        <BudgetWidget />
 
-      <View style={{ flexDirection: 'row', gap: 12, marginTop: 16, marginBottom: 8 }}>
-        <Pressable 
-          onPress={() => setAiModalVisible(true)}
-          style={({ pressed }) => [
-            styles.addTransactionBtn,
-            { 
-              flex: 1,
-              marginTop: 0,
-              marginBottom: 0,
-              backgroundColor: themeColors.primary,
-              borderColor: 'transparent',
-              transform: [{ scale: pressed ? 0.98 : 1 }],
-            }
-          ]}
-        >
-          <MaterialCommunityIcons 
-            name="creation" 
-            size={20} 
-            color={theme === 'dark' ? '#000000' : '#FFFFFF'} 
-            style={{ marginRight: 6 }} 
-          />
-          <Text style={[styles.addTransactionBtnText, { color: theme === 'dark' ? '#000000' : '#FFFFFF' }]}>
-            AI Quick Add
-          </Text>
-        </Pressable>
-
-        <Pressable 
-          onPress={() => router.push('/add-transaction')}
-          style={({ pressed }) => [
-            styles.addTransactionBtn,
-            { 
-              flex: 1,
-              marginTop: 0,
-              marginBottom: 0,
-              backgroundColor: pressed ? themeColors.surfaceHover : themeColors.surface,
-              borderColor: themeColors.border,
-              borderWidth: 1.5,
-              transform: [{ scale: pressed ? 0.98 : 1 }],
-            }
-          ]}
-        >
-          <MaterialCommunityIcons name="plus" size={20} color={themeColors.textPrimary} style={{ marginRight: 6 }} />
-          <Text style={[styles.addTransactionBtnText, { color: themeColors.textPrimary }]}>Manual Add</Text>
-        </Pressable>
-      </View>
-
-      <AIQuickAddModal 
-        visible={aiModalVisible} 
-        onClose={() => setAiModalVisible(false)} 
-      />
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Recent Transactions</Text>
-      </View>
-
-      <View style={styles.transactionList}>
-        {recentTransactions.length > 0 ? (
-          recentTransactions.map(txn => (
-            <TransactionCard 
-              key={txn.id} 
-              transaction={txn}
-              onPress={() => handleDelete(txn.id)}
+        <View style={{ flexDirection: 'row', gap: 12, marginTop: 16, marginBottom: 8 }}>
+          <Pressable 
+            onPress={() => setAiModalVisible(true)}
+            style={({ pressed }) => [
+              styles.addTransactionBtn,
+              { 
+                flex: 1,
+                marginTop: 0,
+                marginBottom: 0,
+                backgroundColor: themeColors.primary,
+                borderColor: 'transparent',
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              }
+            ]}
+          >
+            <MaterialCommunityIcons 
+              name="creation" 
+              size={20} 
+              color={theme === 'dark' ? '#000000' : '#FFFFFF'} 
+              style={{ marginRight: 6 }} 
             />
-          ))
-        ) : (
-          <Text style={styles.emptyText}>No recent transactions</Text>
-        )}
-      </View>
-    </ScrollView>
+            <Text style={[styles.addTransactionBtnText, { color: theme === 'dark' ? '#000000' : '#FFFFFF' }]}>
+              AI Quick Add
+            </Text>
+          </Pressable>
+
+          <Pressable 
+            onPress={() => router.push('/add-transaction')}
+            style={({ pressed }) => [
+              styles.addTransactionBtn,
+              { 
+                flex: 1,
+                marginTop: 0,
+                marginBottom: 0,
+                backgroundColor: pressed ? themeColors.surfaceHover : themeColors.surface,
+                borderColor: themeColors.border,
+                borderWidth: 1.5,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              }
+            ]}
+          >
+            <MaterialCommunityIcons name="plus" size={20} color={themeColors.textPrimary} style={{ marginRight: 6 }} />
+            <Text style={[styles.addTransactionBtnText, { color: themeColors.textPrimary }]}>Manual Add</Text>
+          </Pressable>
+        </View>
+
+        <AIQuickAddModal 
+          visible={aiModalVisible} 
+          onClose={() => setAiModalVisible(false)} 
+        />
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Transactions</Text>
+        </View>
+
+        <View style={styles.transactionList}>
+          {recentTransactions.length > 0 ? (
+            recentTransactions.map(txn => (
+              <TransactionCard 
+                key={txn.id} 
+                transaction={txn}
+                onPress={() => handleDelete(txn.id)}
+              />
+            ))
+          ) : (
+            <Text style={styles.emptyText}>No recent transactions</Text>
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Floating Instant Voice FAB */}
+      <Pressable
+        onPress={() => setAiModalVisible(true)}
+        style={({ pressed }) => [
+          styles.floatingVoiceFab,
+          pressed && { transform: [{ scale: 0.92 }] }
+        ]}
+      >
+        <MaterialCommunityIcons name="microphone" size={28} color={theme === 'dark' ? '#000000' : '#FFFFFF'} />
+      </Pressable>
+    </View>
   );
 }
 
@@ -199,6 +222,41 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     color: themeColors.textSecondary,
     marginTop: 6,
     fontWeight: '500',
+  },
+  voiceQuickHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: themeColors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 100,
+    gap: 6,
+    elevation: 4,
+    shadowColor: themeColors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  voiceQuickHeaderBtnText: {
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  floatingVoiceFab: {
+    position: 'absolute',
+    bottom: 28,
+    right: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: themeColors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    zIndex: 999,
   },
   logoutBtn: {
     padding: 10,

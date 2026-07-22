@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, Pressable, ActivityIndicator, Animated } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../context/ThemeContext';
 import { colors } from '../../constants/colors';
 import { useAuth } from '../../context/AuthContext';
@@ -36,9 +37,38 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (isListening) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.08,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [isListening]);
+
   // Handle Speech Recognition events
-  useSpeechRecognitionEvent('start', () => setIsListening(true));
-  useSpeechRecognitionEvent('end', () => setIsListening(false));
+  useSpeechRecognitionEvent('start', () => {
+    setIsListening(true);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch (_) {}
+  });
+  useSpeechRecognitionEvent('end', () => {
+    setIsListening(false);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (_) {}
+  });
   useSpeechRecognitionEvent('error', (event) => {
     setIsListening(false);
     console.log('[SpeechRecognition] Error:', event.error, event.message);
@@ -49,12 +79,15 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
       const recognizedText = event.results[0]?.transcript || '';
       setInput(recognizedText);
       if (event.isFinal && recognizedText.trim()) {
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch (_) {}
         handleAnalyze(recognizedText);
       }
     }
   });
 
   const toggleVoiceRecording = async () => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch (_) {}
+
     if (isListening) {
       try {
         ExpoSpeechRecognitionModule.stop();
@@ -123,7 +156,7 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
 
     setSaving(true);
     try {
-      const today = new Date();
+      const targetDate = parsedData.date ? new Date(parsedData.date + 'T12:00:00') : new Date();
       await addTransaction(
         userData.familyId,
         parsedData.type,
@@ -131,7 +164,7 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
         parsedData.category || 'Other',
         userData.name,
         userData.uid,
-        today,
+        targetDate,
         parsedData.note,
         parsedData.type === 'transfer' ? undefined : parsedData.paymentMethod,
         parsedData.type === 'transfer' ? parsedData.paymentMethod : undefined
@@ -172,25 +205,27 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
             </Text>
 
             {/* In-App Voice Mic Action Bar */}
-            <TouchableOpacity
-              style={[
-                styles.voiceMicBtn,
-                isListening && styles.voiceMicBtnActive
-              ]}
-              onPress={toggleVoiceRecording}
-            >
-              <MaterialCommunityIcons 
-                name={isListening ? "microphone" : "microphone-outline"} 
-                size={28} 
-                color={isListening ? "#FFFFFF" : themeColors.textPrimary} 
-              />
-              <Text style={[
-                styles.voiceMicText,
-                isListening && { color: "#FFFFFF", fontWeight: '800' }
-              ]}>
-                {isListening ? "Listening... Speak Now! 🎙️" : "Tap to Speak (English / Hinglish) 🎙️"}
-              </Text>
-            </TouchableOpacity>
+            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+              <TouchableOpacity
+                style={[
+                  styles.voiceMicBtn,
+                  isListening && styles.voiceMicBtnActive
+                ]}
+                onPress={toggleVoiceRecording}
+              >
+                <MaterialCommunityIcons 
+                  name={isListening ? "microphone" : "microphone-outline"} 
+                  size={28} 
+                  color={isListening ? "#FFFFFF" : themeColors.textPrimary} 
+                />
+                <Text style={[
+                  styles.voiceMicText,
+                  isListening && { color: "#FFFFFF", fontWeight: '800' }
+                ]}>
+                  {isListening ? "Listening... Speak Now! 🎙️" : "Tap to Speak (English / Hinglish) 🎙️"}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
 
             {/* Input box */}
             <View style={styles.inputContainer}>
@@ -237,6 +272,13 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
                   <Text style={styles.resultTitle}>Verify & Edit Details:</Text>
                   <Text style={styles.editHintText}>Tap any field to change</Text>
                 </View>
+
+                {parsedData.date && (
+                  <View style={styles.dateBadge}>
+                    <MaterialCommunityIcons name="calendar-clock" size={16} color={themeColors.primary} style={{ marginRight: 6 }} />
+                    <Text style={styles.dateBadgeText}>Detected Date: {parsedData.date}</Text>
+                  </View>
+                )}
                 
                 {/* 1. Type Toggle */}
                 <Text style={styles.fieldLabel}>Transaction Type:</Text>
@@ -487,6 +529,23 @@ const getStyles = (themeColors: any, theme: string) => StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+  },
+  dateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: themeColors.surfaceHover,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: themeColors.border,
+    marginBottom: 10,
+  },
+  dateBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: themeColors.primary,
   },
   resultTitle: {
     fontSize: 15,
