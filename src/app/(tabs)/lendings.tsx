@@ -9,6 +9,7 @@ import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
 import { colors } from '../../constants/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { formatIndianNumber, parseIndianNumber } from '../../lib/formatters';
 
 export default function LendingsScreen() {
   const { theme } = useTheme();
@@ -30,7 +31,7 @@ export default function LendingsScreen() {
   const openSettleModal = (lending: Lending) => {
     setSelectedLending(lending);
     const remaining = lending.amount - (lending.settledAmount || 0);
-    setSettleAmountInput(remaining.toString());
+    setSettleAmountInput(formatIndianNumber(remaining.toString()));
     setSettleModalVisible(true);
   };
 
@@ -41,8 +42,8 @@ export default function LendingsScreen() {
 
   const confirmSettle = async () => {
     if (!selectedLending) return;
-    const amount = Number(settleAmountInput);
-    if (isNaN(amount) || amount <= 0) return;
+    const amount = parseIndianNumber(settleAmountInput);
+    if (amount <= 0) return;
 
     setIsProcessing(true);
     try {
@@ -59,7 +60,7 @@ export default function LendingsScreen() {
     if (!selectedLending) return;
     setIsProcessing(true);
     try {
-      await deleteLending(selectedLending.id);
+      await deleteLending(selectedLending.id, selectedLending.familyId);
       setDeleteModalVisible(false);
     } catch (err) {
       console.error(err);
@@ -193,8 +194,8 @@ export default function LendingsScreen() {
             <Input
               label="Amount Settled (₹)"
               value={settleAmountInput}
-              onChangeText={setSettleAmountInput}
-              keyboardType="numeric"
+              onChangeText={(val) => setSettleAmountInput(formatIndianNumber(val))}
+              keyboardType="number-pad"
             />
             <Button 
               title="Confirm Settlement" 

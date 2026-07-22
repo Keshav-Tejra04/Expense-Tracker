@@ -1,5 +1,4 @@
-import { collection, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { syncService } from './syncService';
 import { PaymentMethod } from './transactions';
 
 export type LendingType = 'lent' | 'borrowed';
@@ -35,7 +34,7 @@ export const addLending = async (
   const dayStr = String(date.getDate()).padStart(2, '0');
   const formattedDate = `${year}-${monthStr}-${dayStr}`;
 
-  const newLending: any = {
+  const newLending: Lending = {
     id: lendingId,
     familyId,
     type,
@@ -50,23 +49,48 @@ export const addLending = async (
   if (note !== undefined) newLending.note = note;
   if (paymentMethod !== undefined) newLending.paymentMethod = paymentMethod;
 
-  await setDoc(doc(db, 'lendings', lendingId), newLending);
+  // Update local cache
+  const cacheKey = `@cache_lendings_${familyId}`;
+  const cachedLendings = (await syncService.getCache<Lending[]>(cacheKey)) || [];
+  await syncService.setCache(cacheKey, [newLending, ...cachedLendings]);
+
+  // Enqueue offline action
+  await syncService.enqueueAction('ADD_LENDING', newLending);
+
   return lendingId;
 };
 
 export const settleLending = async (lending: Lending, amount: number) => {
   const currentSettled = lending.settledAmount || 0;
   const newSettled = currentSettled + amount;
-  
-  // If the new settled amount is greater than or equal to the total amount, mark as settled
-  const newStatus = newSettled >= lending.amount ? 'settled' : 'pending';
+  const newStatus: LendingStatus = newSettled >= lending.amount ? 'settled' : 'pending';
 
-  await updateDoc(doc(db, 'lendings', lending.id), {
+  // Update local cache
+  const cacheKey = `@cache_lendings_${lending.familyId}`;
+  const cachedLendings = (await syncService.getCache<Lending[]>(cacheKey)) || [];
+  const updatedCache = cachedLendings.map(l => {
+    if (l.id === lending.id) {
+      return { ...l, settledAmount: newSettled, status: newStatus };
+    }
+    return l;
+  });
+  await syncService.setCache(cacheKey, updatedCache);
+
+  // Enqueue offline action
+  await syncService.enqueueAction('SETTLE_LENDING', {
+    lendingId: lending.id,
     settledAmount: newSettled,
     status: newStatus
   });
 };
 
-export const deleteLending = async (lendingId: string) => {
-  await deleteDoc(doc(db, 'lendings', lendingId));
+export const deleteLending = async (lendingId: string, familyId?: string) => {
+  if (familyId) {
+    const cacheKey = `@cache_lendings_${familyId}`;
+    const cachedLendings = (await syncService.getCache<Lending[]>(cacheKey)) || [];
+    await syncService.setCache(cacheKey, cachedLendings.filter(l => l.id !== lendingId));
+  }
+
+  await syncService.enqueueAction('DELETE_LENDING', { lendingId });
 };
+

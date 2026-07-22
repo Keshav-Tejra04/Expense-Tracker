@@ -7,6 +7,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { colors } from '../../constants/colors';
+import { formatIndianNumber, parseIndianNumber } from '../../lib/formatters';
 
 export default function RegisterScreen() {
   const { theme } = useTheme();
@@ -51,8 +52,8 @@ export default function RegisterScreen() {
         name, 
         mode === 'create' ? familyName : undefined, 
         mode === 'join' ? familyCode : undefined,
-        mode === 'create' && initialCashBalance ? Number(initialCashBalance) : undefined,
-        mode === 'create' && initialOnlineBalance ? Number(initialOnlineBalance) : undefined
+        mode === 'create' && initialCashBalance ? parseIndianNumber(initialCashBalance) : undefined,
+        mode === 'create' && initialOnlineBalance ? parseIndianNumber(initialOnlineBalance) : undefined
       );
       // AuthContext will handle redirect to (tabs) automatically
     } catch (error: any) {
@@ -136,8 +137,8 @@ export default function RegisterScreen() {
                     label="Initial Cash (₹)"
                     placeholder="0"
                     value={initialCashBalance}
-                    onChangeText={setInitialCashBalance}
-                    keyboardType="default"
+                    onChangeText={(val) => setInitialCashBalance(formatIndianNumber(val))}
+                    keyboardType="number-pad"
                   />
                 </View>
                 <View style={{ flex: 1, marginLeft: 8 }}>
@@ -145,8 +146,8 @@ export default function RegisterScreen() {
                     label="Initial Online (₹)"
                     placeholder="0"
                     value={initialOnlineBalance}
-                    onChangeText={setInitialOnlineBalance}
-                    keyboardType="default"
+                    onChangeText={(val) => setInitialOnlineBalance(formatIndianNumber(val))}
+                    keyboardType="number-pad"
                   />
                 </View>
               </View>

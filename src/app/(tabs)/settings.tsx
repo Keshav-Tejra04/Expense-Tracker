@@ -12,6 +12,7 @@ import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { colors } from '../../constants/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { formatIndianNumber, parseIndianNumber } from '../../lib/formatters';
 
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
@@ -62,8 +63,8 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     if (family && !isEditingBalances && !txLoading && !lnLoading) {
-      setCashBalance(currentCash.toString());
-      setOnlineBalance(currentOnline.toString());
+      setCashBalance(formatIndianNumber(currentCash.toString()));
+      setOnlineBalance(formatIndianNumber(currentOnline.toString()));
     }
   }, [family, isEditingBalances, txLoading, lnLoading, currentCash, currentOnline]);
 
@@ -78,12 +79,8 @@ export default function SettingsScreen() {
     if (!family) return;
     setIsSavingBalances(true);
     try {
-      const targetCash = Number(cashBalance);
-      const targetOnline = Number(onlineBalance);
-
-      if (isNaN(targetCash) || isNaN(targetOnline)) {
-        throw new Error('Please enter valid numeric balances');
-      }
+      const targetCash = parseIndianNumber(cashBalance);
+      const targetOnline = parseIndianNumber(onlineBalance);
 
       // Calculate what the initial balances should be to make current balances match user input
       const newInitialCash = targetCash - cashDelta;
@@ -146,14 +143,14 @@ export default function SettingsScreen() {
             <Input 
               label="Current Cash Balance (₹)" 
               value={cashBalance} 
-              onChangeText={setCashBalance} 
-              keyboardType="default" 
+              onChangeText={(val) => setCashBalance(formatIndianNumber(val))} 
+              keyboardType="number-pad" 
             />
             <Input 
               label="Current Online Balance (₹)" 
               value={onlineBalance} 
-              onChangeText={setOnlineBalance} 
-              keyboardType="default" 
+              onChangeText={(val) => setOnlineBalance(formatIndianNumber(val))} 
+              keyboardType="number-pad" 
             />
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
               <Button title="Cancel" variant="secondary" onPress={() => setIsEditingBalances(false)} style={{ flex: 1 }} />

@@ -64,7 +64,7 @@ export default function HomeScreen() {
   const handleDelete = (id: string) => {
     Alert.alert('Delete Transaction', 'Are you sure you want to delete this?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteTransaction(id) }
+      { text: 'Delete', style: 'destructive', onPress: () => deleteTransaction(id, userData?.familyId || undefined) }
     ]);
   };
 

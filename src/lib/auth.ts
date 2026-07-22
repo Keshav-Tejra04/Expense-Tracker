@@ -2,6 +2,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } f
 import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { User, Family } from './types';
+import { syncService } from './syncService';
 
 // Generate a random 6-character alphanumeric code
 const generateFamilyCode = () => {
@@ -89,6 +90,7 @@ export const registerUser = async (
   };
 
   await setDoc(doc(db, 'users', firebaseUser.uid), userProfile);
+  await syncService.setCache(`@cache_user_${firebaseUser.uid}`, userProfile);
   return userProfile;
 };
 

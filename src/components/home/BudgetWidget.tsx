@@ -8,6 +8,7 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { colors } from '../../constants/colors';
+import { formatIndianNumber, parseIndianNumber } from '../../lib/formatters';
 
 export function BudgetWidget() {
   const { theme } = useTheme();
@@ -33,8 +34,8 @@ export function BudgetWidget() {
   
   const handleSaveBudget = async () => {
     if (!family) return;
-    const amount = Number(budgetInput);
-    if (isNaN(amount) || amount <= 0) {
+    const amount = parseIndianNumber(budgetInput);
+    if (amount <= 0) {
       Alert.alert('Invalid Amount', 'Please enter a valid budget amount.');
       return;
     }
@@ -80,10 +81,10 @@ export function BudgetWidget() {
           </Text>
           <Input
             label="Monthly Budget (₹)"
-            placeholder="e.g. 50000"
+            placeholder="e.g. 50,000"
             value={budgetInput}
-            onChangeText={setBudgetInput}
-            keyboardType="numeric"
+            onChangeText={(val) => setBudgetInput(formatIndianNumber(val))}
+            keyboardType="number-pad"
           />
           <View style={styles.actionRow}>
             {isEditing && (
@@ -106,7 +107,7 @@ export function BudgetWidget() {
         <Card variant="glass" style={styles.budgetCard}>
           <View style={styles.budgetHeader}>
             <Text style={styles.budgetLabel}>{today.toLocaleString('default', { month: 'long' })} Overview</Text>
-            <TouchableOpacity onPress={() => { setBudgetInput(budget.toString()); setIsEditing(true); }}>
+            <TouchableOpacity onPress={() => { setBudgetInput(formatIndianNumber(budget.toString())); setIsEditing(true); }}>
               <Text style={styles.editBtn}>Edit</Text>
             </TouchableOpacity>
           </View>

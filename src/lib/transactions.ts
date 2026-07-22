@@ -1,5 +1,6 @@
-import { collection, doc, setDoc, deleteDoc, query, where, orderBy, getDocs, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
+import { syncService } from './syncService';
 
 export type TransactionType = 'expense' | 'income' | 'transfer';
 export type PaymentMethod = 'cash' | 'online';
@@ -42,7 +43,7 @@ export const addTransaction = async (
   const formattedDate = `${year}-${monthStr}-${dayStr}`;
   const formattedMonth = `${year}-${monthStr}`;
 
-  const newTransaction: any = {
+  const newTransaction: Transaction = {
     id: transactionId,
     familyId,
     type,
@@ -59,10 +60,24 @@ export const addTransaction = async (
   if (paymentMethod !== undefined) newTransaction.paymentMethod = paymentMethod;
   if (transferSource !== undefined) newTransaction.transferSource = transferSource;
 
-  await setDoc(doc(db, 'transactions', transactionId), newTransaction);
+  // Update local cache immediately
+  const cacheKey = `@cache_txns_${familyId}`;
+  const cachedTxns = (await syncService.getCache<Transaction[]>(cacheKey)) || [];
+  await syncService.setCache(cacheKey, [newTransaction, ...cachedTxns]);
+
+  // Enqueue offline/online sync action
+  await syncService.enqueueAction('ADD_TRANSACTION', newTransaction);
+
   return transactionId;
 };
 
-export const deleteTransaction = async (transactionId: string) => {
-  await deleteDoc(doc(db, 'transactions', transactionId));
+export const deleteTransaction = async (transactionId: string, familyId?: string) => {
+  if (familyId) {
+    const cacheKey = `@cache_txns_${familyId}`;
+    const cachedTxns = (await syncService.getCache<Transaction[]>(cacheKey)) || [];
+    await syncService.setCache(cacheKey, cachedTxns.filter(t => t.id !== transactionId));
+  }
+
+  await syncService.enqueueAction('DELETE_TRANSACTION', { transactionId });
 };
+

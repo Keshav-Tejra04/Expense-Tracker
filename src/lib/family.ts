@@ -1,15 +1,23 @@
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { syncService } from './syncService';
+import { Family } from './types';
 
 export const updateFamilyBudget = async (familyId: string, monthlyBudget: number) => {
-  await updateDoc(doc(db, 'families', familyId), {
-    monthlyBudget
-  });
+  const cacheKey = `@cache_family_${familyId}`;
+  const cachedFamily = await syncService.getCache<Family>(cacheKey);
+  if (cachedFamily) {
+    await syncService.setCache(cacheKey, { ...cachedFamily, monthlyBudget });
+  }
+
+  await syncService.enqueueAction('UPDATE_BUDGET', { familyId, monthlyBudget });
 };
 
 export const updateFamilyBalances = async (familyId: string, initialCashBalance: number, initialOnlineBalance: number) => {
-  await updateDoc(doc(db, 'families', familyId), {
-    initialCashBalance,
-    initialOnlineBalance
-  });
+  const cacheKey = `@cache_family_${familyId}`;
+  const cachedFamily = await syncService.getCache<Family>(cacheKey);
+  if (cachedFamily) {
+    await syncService.setCache(cacheKey, { ...cachedFamily, initialCashBalance, initialOnlineBalance });
+  }
+
+  await syncService.enqueueAction('UPDATE_BALANCES', { familyId, initialCashBalance, initialOnlineBalance });
 };
+

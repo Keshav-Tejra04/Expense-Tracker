@@ -173,7 +173,7 @@ export default function AddLendingScreen() {
             placeholderTextColor={themeColors.border}
             value={amount}
             onChangeText={(val) => setAmount(formatIndianNumber(val))}
-            keyboardType="default"
+            keyboardType="number-pad"
             autoFocus
           />
         </View>

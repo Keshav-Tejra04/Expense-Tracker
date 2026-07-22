@@ -6,7 +6,8 @@ import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import { View, ActivityIndicator, LogBox } from 'react-native';
+import { View, ActivityIndicator, LogBox, AppState } from 'react-native';
+import { syncService } from '../lib/syncService';
 import { colors } from '../constants/colors';
 
 // Ignore specific warnings
@@ -58,6 +59,22 @@ function InitialLayout() {
 export default function RootLayout() {
   useEffect(() => {
     SplashScreen.hideAsync();
+
+    // Process sync queue periodically and when app becomes active
+    const interval = setInterval(() => {
+      syncService.processSyncQueue();
+    }, 10000);
+
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        syncService.processSyncQueue();
+      }
+    });
+
+    return () => {
+      clearInterval(interval);
+      subscription.remove();
+    };
   }, []);
 
   return (

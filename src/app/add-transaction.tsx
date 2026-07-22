@@ -202,7 +202,7 @@ export default function AddTransactionScreen() {
             placeholder="0"
             value={amount}
             onChangeText={(val) => setAmount(formatIndianNumber(val))}
-            keyboardType="default"
+            keyboardType="number-pad"
             style={styles.amountInput}
           />
 

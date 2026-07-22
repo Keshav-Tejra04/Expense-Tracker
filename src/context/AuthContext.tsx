@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { User } from '../lib/types';
+import { syncService } from '../lib/syncService';
 
 interface AuthContextType {
   user: FirebaseUser | null;
@@ -27,30 +28,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const targetUid = uid || user?.uid;
     if (!targetUid) return;
     
-    try {
-      const userDoc = await getDoc(doc(db, 'users', targetUid));
-      if (userDoc.exists()) {
-        setUserData({ uid: targetUid, ...userDoc.data() } as User);
-      } else {
-        setUserData(null);
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
+    // Check local cache first
+    const cachedUser = await syncService.getCache<User>(`@cache_user_${targetUid}`);
+    if (cachedUser) {
+      setUserData(cachedUser);
     }
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    let unSubDoc: (() => void) | null = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
+      
+      if (unSubDoc) {
+        unSubDoc();
+        unSubDoc = null;
+      }
+
       if (firebaseUser) {
-        await refreshUserData(firebaseUser.uid);
+        // Load cached user data immediately for instant offline rendering
+        const cacheKey = `@cache_user_${firebaseUser.uid}`;
+        const cachedUser = await syncService.getCache<User>(cacheKey);
+        if (cachedUser) {
+          setUserData(cachedUser);
+        }
+
+        // Trigger queue sync when user logs in/starts app
+        syncService.processSyncQueue();
+
+        // Real-time listener for user document in Firestore
+        unSubDoc = onSnapshot(
+          doc(db, 'users', firebaseUser.uid),
+          (snapshot) => {
+            if (snapshot.exists()) {
+              const freshData = { uid: firebaseUser.uid, ...snapshot.data() } as User;
+              setUserData(freshData);
+              syncService.setCache(cacheKey, freshData);
+            } else {
+              setUserData(null);
+            }
+            setLoading(false);
+          },
+          async (error) => {
+            console.warn('[AuthContext] Firestore onSnapshot error (likely offline):', error.message);
+            // Fallback to cache if error occurs (offline)
+            const fallbackUser = await syncService.getCache<User>(cacheKey);
+            if (fallbackUser) {
+              setUserData(fallbackUser);
+            }
+            setLoading(false);
+          }
+        );
       } else {
         setUserData(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeAuth();
+      if (unSubDoc) unSubDoc();
+    };
   }, []);
 
   return (
@@ -61,3 +100,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+
