@@ -15,10 +15,10 @@ interface AIQuickAddModalProps {
 }
 
 const SAMPLE_PROMPTS = [
+  "School se 450 rupaye aaye",
+  "School fee 3500 online pay ki",
   "Paid 450 cash for groceries at DMart",
   "Doodh ke 150 rupaye online diye",
-  "Kheti se 25000 income mili bank me",
-  "2000 cash transferred from online",
 ];
 
 export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
@@ -263,15 +263,15 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     gap: 8,
   },
   chip: {
-    backgroundColor: `${themeColors.primary}15`,
+    backgroundColor: themeColors.surfaceHover,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: `${themeColors.primary}30`,
+    borderColor: themeColors.border,
   },
   chipText: {
-    color: themeColors.primary,
+    color: themeColors.textPrimary,
     fontSize: 12,
     fontWeight: '600',
   },

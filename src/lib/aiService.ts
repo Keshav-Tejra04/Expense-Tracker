@@ -23,7 +23,7 @@ export async function parseExpenseWithAI(userInput: string): Promise<ParsedAIExp
       const incomeCatNames = defaultIncomeCategories.map(c => c.name).join(', ');
 
       const prompt = `
-You are an AI financial assistant for an Indian family expense tracker app called "Ghar Kharch".
+You are an intelligent financial assistant for an Indian family expense tracker app called "Ghar Kharch".
 Given this user sentence in English, Hindi, or Hinglish: "${cleanInput}"
 
 Extract the structured details and return ONLY a valid JSON object matching this exact TypeScript structure:
@@ -35,10 +35,29 @@ Extract the structured details and return ONLY a valid JSON object matching this
   "note": string (brief summary of what the transaction was for)
 }
 
-Rules:
-- Default paymentMethod to "online" if unclear or mentioned gpay/upi/phonepe/paytm/netbanking. Use "cash" if cash/rokle is mentioned.
-- Default type to "expense" unless income/salary/refund or transfer is clearly implied.
-- Do NOT output any markdown, code blocks, or extra text. Output strictly raw JSON.
+CRITICAL RULES FOR TYPE DETERMINATION (Income vs Expense vs Transfer):
+1. INCOME ("Money Came In / Aaye / Mila"):
+   - Verbs & Keywords: "aaye", "aaya", "aayi", "aaye hain", "mila", "mili", "mile", "received", "got", "refund", "refunded", "credited", "salary", "kheti"
+   - EXAMPLES:
+     - "school se 450 rupye aaye" -> type: "income", category: "School Refund"
+     - "dukaan se 1200 aaya" -> type: "income", category: "Business/Freelance"
+     - "gpay par 500 mile" -> type: "income", category: "Refund"
+     - "cashback mila" -> type: "income", category: "Cashback"
+
+2. EXPENSE ("Money Went Out / Gaye / Diye"):
+   - Verbs & Keywords: "gaye", "gaya", "gayi", "diya", "diye", "diye hain", "di", "kharch", "kharcha", "paid", "spent", "debited", "bhara", "khareeda", "kharida"
+   - EXAMPLES:
+     - "school fee 4500 di" -> type: "expense", category: "Education/Tuition"
+     - "sabzi me 300 gaye" -> type: "expense", category: "Groceries/Sabzi"
+
+3. TRANSFER ("Money Movement"):
+   - Verbs & Keywords: "transfer", "nikala", "atm", "cash to online", "online to cash"
+   - EXAMPLES: "5000 online se cash nikala" -> type: "transfer", category: "Transfer"
+
+Category List for Expenses: [${expenseCatNames}]
+Category List for Income: [${incomeCatNames}]
+
+Output strictly raw JSON, no markdown code blocks.
 `;
 
       const response = await fetch(
@@ -94,11 +113,15 @@ function fallbackLocalParser(text: string): ParsedAIExpense {
     amount = parseFloat(numbers[0]);
   }
 
-  // 2. Detect Type
+  // 2. Detect Type based on Hinglish verbs
   let type: 'expense' | 'income' | 'transfer' = 'expense';
-  if (lower.includes('salary') || lower.includes('income') || lower.includes('received') || lower.includes('refund') || lower.includes('kheti')) {
+  
+  const incomeKeywords = ['aaye', 'aaya', 'aayi', 'aaye hain', 'mila', 'mili', 'mile', 'received', 'got', 'refund', 'credited', 'salary', 'kheti', 'cashback'];
+  const transferKeywords = ['transfer', 'bheja', 'nikala', 'atm'];
+  
+  if (incomeKeywords.some(kw => lower.includes(kw))) {
     type = 'income';
-  } else if (lower.includes('transfer') || lower.includes('bheja') || lower.includes('sent to cash') || lower.includes('sent to online')) {
+  } else if (transferKeywords.some(kw => lower.includes(kw))) {
     type = 'transfer';
   }
 
@@ -109,21 +132,47 @@ function fallbackLocalParser(text: string): ParsedAIExpense {
   }
 
   // 4. Detect Category
-  let category = type === 'income' ? 'Other' : 'Other';
-  if (type === 'expense') {
-    if (lower.includes('milk') || lower.includes('doodh')) category = 'Milk';
-    else if (lower.includes('sabzi') || lower.includes('grocery') || lower.includes('rashan') || lower.includes('vegetable')) category = 'Groceries/Sabzi';
-    else if (lower.includes('rent') || lower.includes('kiraya')) category = 'Rent';
-    else if (lower.includes('petrol') || lower.includes('auto') || lower.includes('cab') || lower.includes('bus') || lower.includes('transport')) category = 'Transport/Petrol';
-    else if (lower.includes('food') || lower.includes('hotel') || lower.includes('restaurant') || lower.includes('dinner') || lower.includes('lunch')) category = 'Food Outside';
-    else if (lower.includes('light') || lower.includes('bijli') || lower.includes('electricity')) category = 'Electricity';
-    else if (lower.includes('recharge') || lower.includes('mobile')) category = 'Mobile/Recharge';
-    else if (lower.includes('wifi') || lower.includes('internet')) category = 'Internet/WiFi';
-    else if (lower.includes('doctor') || lower.includes('medicine') || lower.includes('dawa') || lower.includes('hospital')) category = 'Medical/Doctor';
-    else if (lower.includes('kapde') || lower.includes('shopping') || lower.includes('cloth')) category = 'Shopping/Kapde';
-  } else if (type === 'income') {
-    if (lower.includes('salary')) category = 'Salary';
-    else if (lower.includes('kheti')) category = 'Kheti';
+  let category = 'Other';
+  if (type === 'income') {
+    if (lower.includes('school') || lower.includes('tuition') || lower.includes('fee')) {
+      category = 'School Refund';
+    } else if (lower.includes('salary')) {
+      category = 'Salary';
+    } else if (lower.includes('kheti')) {
+      category = 'Kheti';
+    } else if (lower.includes('cashback')) {
+      category = 'Cashback';
+    } else if (lower.includes('gift')) {
+      category = 'Gift/Received';
+    } else {
+      category = 'Refund';
+    }
+  } else if (type === 'expense') {
+    if (lower.includes('school') || lower.includes('tuition') || lower.includes('fee') || lower.includes('college') || lower.includes('coaching') || lower.includes('book') || lower.includes('exam') || lower.includes('padhai')) {
+      category = 'Education/Tuition';
+    } else if (lower.includes('milk') || lower.includes('doodh') || lower.includes('dudh') || lower.includes('paneer') || lower.includes('dahi')) {
+      category = 'Milk';
+    } else if (lower.includes('sabzi') || lower.includes('grocery') || lower.includes('groceries') || lower.includes('rashan') || lower.includes('ration') || lower.includes('vegetable') || lower.includes('dmart')) {
+      category = 'Groceries/Sabzi';
+    } else if (lower.includes('rent') || lower.includes('kiraya')) {
+      category = 'Rent';
+    } else if (lower.includes('petrol') || lower.includes('diesel') || lower.includes('auto') || lower.includes('cab') || lower.includes('bus') || lower.includes('train') || lower.includes('ola') || lower.includes('uber') || lower.includes('transport') || lower.includes('fuel')) {
+      category = 'Transport/Petrol';
+    } else if (lower.includes('food') || lower.includes('hotel') || lower.includes('restaurant') || lower.includes('dinner') || lower.includes('lunch') || lower.includes('swiggy') || lower.includes('zomato') || lower.includes('chai') || lower.includes('samosa')) {
+      category = 'Food Outside';
+    } else if (lower.includes('light') || lower.includes('bijli') || lower.includes('electricity')) {
+      category = 'Electricity';
+    } else if (lower.includes('recharge') || lower.includes('mobile')) {
+      category = 'Mobile/Recharge';
+    } else if (lower.includes('wifi') || lower.includes('internet') || lower.includes('broadband')) {
+      category = 'Internet/WiFi';
+    } else if (lower.includes('doctor') || lower.includes('medicine') || lower.includes('dawa') || lower.includes('hospital') || lower.includes('clinic')) {
+      category = 'Medical/Doctor';
+    } else if (lower.includes('kapde') || lower.includes('shopping') || lower.includes('cloth') || lower.includes('shirt') || lower.includes('pant') || lower.includes('saree') || lower.includes('shoes')) {
+      category = 'Shopping/Kapde';
+    } else if (lower.includes('gas') || lower.includes('cylinder') || lower.includes('lpg')) {
+      category = 'Gas/LPG';
+    }
   } else {
     category = 'Transfer';
   }

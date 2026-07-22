@@ -127,8 +127,8 @@ export default function AddTransactionScreen() {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: `${themeColors.primary}20`,
-            borderColor: themeColors.primary,
+            backgroundColor: themeColors.surfaceHover,
+            borderColor: themeColors.border,
             borderWidth: 1.5,
             paddingVertical: 12,
             paddingHorizontal: 16,
@@ -137,8 +137,8 @@ export default function AddTransactionScreen() {
             transform: [{ scale: pressed ? 0.98 : 1 }],
           }]}
         >
-          <MaterialCommunityIcons name="creation" size={20} color={themeColors.primary} style={{ marginRight: 8 }} />
-          <Text style={{ color: themeColors.primary, fontWeight: '800', fontSize: 14 }}>
+          <MaterialCommunityIcons name="creation" size={20} color={themeColors.textPrimary} style={{ marginRight: 8 }} />
+          <Text style={{ color: themeColors.textPrimary, fontWeight: '800', fontSize: 14 }}>
             ✨ Speak or Type Sentence with AI
           </Text>
         </Pressable>

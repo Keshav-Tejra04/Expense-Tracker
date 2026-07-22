@@ -8,7 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 export function UpdatePromptModal() {
   const { theme } = useTheme();
   const themeColors = colors[theme];
-  const styles = getStyles(themeColors);
+  const styles = getStyles(themeColors, theme);
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -48,7 +48,7 @@ export function UpdatePromptModal() {
       <View style={styles.overlay}>
         <View style={styles.card}>
           <View style={styles.iconContainer}>
-            <MaterialCommunityIcons name="cloud-download-outline" size={36} color={themeColors.primary} />
+            <MaterialCommunityIcons name="cloud-download-outline" size={36} color={themeColors.textPrimary} />
           </View>
 
           <Text style={styles.title}>Update Available!</Text>
@@ -62,7 +62,7 @@ export function UpdatePromptModal() {
             disabled={isUpdating}
           >
             {isUpdating ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={theme === 'dark' ? '#000000' : '#FFFFFF'} />
             ) : (
               <Text style={styles.updateButtonText}>Update Now</Text>
             )}
@@ -82,10 +82,10 @@ export function UpdatePromptModal() {
   );
 }
 
-const getStyles = (themeColors: any) => StyleSheet.create({
+const getStyles = (themeColors: any, theme: string) => StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    backgroundColor: 'rgba(0,0,0,0.75)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -108,10 +108,12 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: `${themeColors.primary}20`,
+    backgroundColor: themeColors.surfaceHover,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: themeColors.border,
   },
   title: {
     fontSize: 22,
@@ -137,7 +139,7 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     marginBottom: 12,
   },
   updateButtonText: {
-    color: '#FFFFFF',
+    color: theme === 'dark' ? '#000000' : '#FFFFFF',
     fontWeight: '800',
     fontSize: 16,
   },
@@ -145,7 +147,7 @@ const getStyles = (themeColors: any) => StyleSheet.create({
     paddingVertical: 8,
   },
   dismissText: {
-    color: themeColors.textMuted,
+    color: themeColors.textSecondary,
     fontWeight: '600',
     fontSize: 14,
   },

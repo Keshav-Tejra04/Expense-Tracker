@@ -115,8 +115,15 @@ export default function HomeScreen() {
             }
           ]}
         >
-          <MaterialCommunityIcons name="creation" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />
-          <Text style={[styles.addTransactionBtnText, { color: '#FFFFFF' }]}>AI Quick Add</Text>
+          <MaterialCommunityIcons 
+            name="creation" 
+            size={20} 
+            color={theme === 'dark' ? '#000000' : '#FFFFFF'} 
+            style={{ marginRight: 6 }} 
+          />
+          <Text style={[styles.addTransactionBtnText, { color: theme === 'dark' ? '#000000' : '#FFFFFF' }]}>
+            AI Quick Add
+          </Text>
         </Pressable>
 
         <Pressable 
