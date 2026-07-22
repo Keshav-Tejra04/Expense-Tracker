@@ -2,7 +2,7 @@
   "expo": {
     "name": "Ghar Kharch",
     "slug": "ghar-kharch",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "gharkharch",
@@ -18,7 +18,10 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.keshav_tejra.tempapp"
+      "package": "com.keshav_tejra.tempapp",
+      "permissions": [
+        "RECORD_AUDIO"
+      ]
     },
     "web": {
       "output": "static",
@@ -32,6 +35,12 @@
           "backgroundColor": "#000000",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow Ghar Kharch to use your microphone for voice expense input."
         }
       ]
     ],
@@ -48,7 +57,7 @@
     "updates": {
       "url": "https://u.expo.dev/12760026-91fe-46ea-b838-fc55a5259b0f"
     },
-    "runtimeVersion": "1.0.0",
+    "runtimeVersion": "1.2.0",
     "owner": "keshav_tejra"
   }
 }

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { useTheme } from '../../context/ThemeContext';
 import { colors } from '../../constants/colors';
 import { useAuth } from '../../context/AuthContext';
@@ -33,11 +34,66 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
   const [parsedData, setParsedData] = useState<ParsedAIExpense | null>(null);
   const [saving, setSaving] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+
+  // Handle Speech Recognition events
+  useSpeechRecognitionEvent('start', () => setIsListening(true));
+  useSpeechRecognitionEvent('end', () => setIsListening(false));
+  useSpeechRecognitionEvent('error', (event) => {
+    setIsListening(false);
+    console.log('[SpeechRecognition] Error:', event.error, event.message);
+  });
+
+  useSpeechRecognitionEvent('result', (event) => {
+    if (event.results && event.results.length > 0) {
+      const recognizedText = event.results[0]?.transcript || '';
+      setInput(recognizedText);
+      if (event.isFinal && recognizedText.trim()) {
+        handleAnalyze(recognizedText);
+      }
+    }
+  });
+
+  const toggleVoiceRecording = async () => {
+    if (isListening) {
+      try {
+        ExpoSpeechRecognitionModule.stop();
+      } catch (e) {
+        console.warn(e);
+      }
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert(
+          'Microphone Permission Required',
+          'Please allow microphone permission to use voice input.'
+        );
+        return;
+      }
+
+      setInput('');
+      setParsedData(null);
+      
+      // Start listening with Hindi/English Indian locale
+      ExpoSpeechRecognitionModule.start({
+        lang: 'hi-IN',
+        interimResults: true,
+        continuous: false,
+      });
+    } catch (error: any) {
+      console.warn('[SpeechRecognition] Start error:', error);
+      Alert.alert('Voice Error', 'Speech recognition unavailable or failed to start. You can type or use your keyboard microphone.');
+    }
+  };
 
   const handleAnalyze = async (textToParse?: string) => {
     const targetText = textToParse || input;
     if (!targetText.trim()) {
-      Alert.alert('Empty Input', 'Please type or select an expense sentence.');
+      Alert.alert('Empty Input', 'Please speak, type, or select an expense sentence.');
       return;
     }
 
@@ -103,7 +159,7 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
           <View style={styles.header}>
             <View style={styles.headerTitleRow}>
               <MaterialCommunityIcons name="creation" size={24} color={themeColors.primary} style={{ marginRight: 8 }} />
-              <Text style={styles.headerTitle}>AI Smart Quick Add</Text>
+              <Text style={styles.headerTitle}>AI Voice & Text Logger</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <MaterialCommunityIcons name="close" size={22} color={themeColors.textSecondary} />
@@ -112,14 +168,35 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
 
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
             <Text style={styles.subtitle}>
-              Type or speak any sentence in English or Hinglish (e.g. "Dost ne 250 ruppe diye" or "School fee 3500 di")
+              Tap the 🎙️ Mic button below to speak in Hindi/Hinglish out loud, or type your sentence.
             </Text>
+
+            {/* In-App Voice Mic Action Bar */}
+            <TouchableOpacity
+              style={[
+                styles.voiceMicBtn,
+                isListening && styles.voiceMicBtnActive
+              ]}
+              onPress={toggleVoiceRecording}
+            >
+              <MaterialCommunityIcons 
+                name={isListening ? "microphone" : "microphone-outline"} 
+                size={28} 
+                color={isListening ? "#FFFFFF" : themeColors.textPrimary} 
+              />
+              <Text style={[
+                styles.voiceMicText,
+                isListening && { color: "#FFFFFF", fontWeight: '800' }
+              ]}>
+                {isListening ? "Listening... Speak Now! 🎙️" : "Tap to Speak (Hindi / Hinglish) 🎙️"}
+              </Text>
+            </TouchableOpacity>
 
             {/* Input box */}
             <View style={styles.inputContainer}>
               <TextInput
                 style={styles.textInput}
-                placeholder="e.g. Paid 450 cash for groceries at DMart"
+                placeholder="Spoken or typed text will appear here..."
                 placeholderTextColor={themeColors.textMuted}
                 value={input}
                 onChangeText={setInput}
@@ -335,6 +412,28 @@ const getStyles = (themeColors: any, theme: string) => StyleSheet.create({
     color: themeColors.textSecondary,
     marginBottom: 16,
     lineHeight: 18,
+  },
+  voiceMicBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: themeColors.surfaceHover,
+    borderColor: themeColors.border,
+    borderWidth: 1.5,
+    borderRadius: 100,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  voiceMicBtnActive: {
+    backgroundColor: themeColors.expense || '#F43F5E',
+    borderColor: 'transparent',
+  },
+  voiceMicText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: themeColors.textPrimary,
+    marginLeft: 8,
   },
   inputContainer: {
     backgroundColor: themeColors.surfaceHover,
