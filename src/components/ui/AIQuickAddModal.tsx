@@ -78,9 +78,9 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
       setInput('');
       setParsedData(null);
       
-      // Start listening with Hindi/English Indian locale
+      // Start listening in English/Hinglish (en-IN) to ensure Latin script output
       ExpoSpeechRecognitionModule.start({
-        lang: 'hi-IN',
+        lang: 'en-IN',
         interimResults: true,
         continuous: false,
       });
@@ -168,7 +168,7 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
 
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
             <Text style={styles.subtitle}>
-              Tap the 🎙️ Mic button below to speak in Hindi/Hinglish out loud, or type your sentence.
+              Tap the 🎙️ Mic button below to speak in English/Hinglish out loud, or type your sentence.
             </Text>
 
             {/* In-App Voice Mic Action Bar */}
@@ -188,7 +188,7 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
                 styles.voiceMicText,
                 isListening && { color: "#FFFFFF", fontWeight: '800' }
               ]}>
-                {isListening ? "Listening... Speak Now! 🎙️" : "Tap to Speak (Hindi / Hinglish) 🎙️"}
+                {isListening ? "Listening... Speak Now! 🎙️" : "Tap to Speak (English / Hinglish) 🎙️"}
               </Text>
             </TouchableOpacity>
 

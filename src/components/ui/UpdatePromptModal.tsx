@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, StyleSheet, TouchableOpacity, ActivityIndicator, AppState } from 'react-native';
 import * as Updates from 'expo-updates';
 import { useTheme } from '../../context/ThemeContext';
 import { colors } from '../../constants/colors';
@@ -27,6 +27,16 @@ export function UpdatePromptModal() {
     }
 
     checkUpdates();
+
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        checkUpdates();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   const handleApplyUpdate = async () => {
