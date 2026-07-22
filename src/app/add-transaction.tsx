@@ -11,6 +11,7 @@ import { Button } from '../components/ui/Button';
 import { colors } from '../constants/colors';
 import { formatIndianNumber, parseIndianNumber } from '../lib/formatters';
 import { DatePicker } from '../components/ui/DatePicker';
+import { AIQuickAddModal } from '../components/ui/AIQuickAddModal';
 
 export default function AddTransactionScreen() {
   const { theme } = useTheme();
@@ -20,6 +21,7 @@ export default function AddTransactionScreen() {
   const { userData } = useAuth();
   const router = useRouter();
   
+  const [aiModalVisible, setAiModalVisible] = useState(false);
   const [type, setType] = useState<TransactionType>('expense');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'online'>('online');
   const [transferSource, setTransferSource] = useState<'cash' | 'online'>('online'); // Used if type === 'transfer'
@@ -119,6 +121,33 @@ export default function AddTransactionScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Pressable 
+          onPress={() => setAiModalVisible(true)}
+          style={({ pressed }) => [{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: `${themeColors.primary}20`,
+            borderColor: themeColors.primary,
+            borderWidth: 1.5,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            borderRadius: 100,
+            marginBottom: 16,
+            transform: [{ scale: pressed ? 0.98 : 1 }],
+          }]}
+        >
+          <MaterialCommunityIcons name="creation" size={20} color={themeColors.primary} style={{ marginRight: 8 }} />
+          <Text style={{ color: themeColors.primary, fontWeight: '800', fontSize: 14 }}>
+            ✨ Speak or Type Sentence with AI
+          </Text>
+        </Pressable>
+
+        <AIQuickAddModal 
+          visible={aiModalVisible} 
+          onClose={() => setAiModalVisible(false)} 
+        />
+
         <View style={styles.formCard}>
           {/* Type Toggle */}
           <View style={styles.toggleContainer}>

@@ -12,6 +12,7 @@ import { BalanceCard } from '../../components/home/BalanceCard';
 import { BudgetWidget } from '../../components/home/BudgetWidget';
 import { TransactionCard } from '../../components/transactions/TransactionCard';
 import { colors } from '../../constants/colors';
+import { AIQuickAddModal } from '../../components/ui/AIQuickAddModal';
 
 export default function HomeScreen() {
   const { theme } = useTheme();
@@ -20,6 +21,8 @@ export default function HomeScreen() {
   
   const { userData } = useAuth();
   const router = useRouter();
+  
+  const [aiModalVisible, setAiModalVisible] = React.useState(false);
   
   const { transactions, loading: txLoading } = useTransactions();
   const { lendings, loading: lnLoading } = useLendings();
@@ -97,21 +100,49 @@ export default function HomeScreen() {
 
       <BudgetWidget />
 
-      <Pressable 
-        onPress={() => router.push('/add-transaction')}
-        style={({ pressed }) => [
-          styles.addTransactionBtn,
-          { 
-            backgroundColor: pressed ? themeColors.surfaceHover : themeColors.surface,
-            borderColor: themeColors.border,
-            borderWidth: 1.5,
-            transform: [{ scale: pressed ? 0.98 : 1 }],
-          }
-        ]}
-      >
-        <MaterialCommunityIcons name="plus" size={22} color={themeColors.textPrimary} style={{ marginRight: 8 }} />
-        <Text style={[styles.addTransactionBtnText, { color: themeColors.textPrimary }]}>Add New Transaction</Text>
-      </Pressable>
+      <View style={{ flexDirection: 'row', gap: 12, marginTop: 16, marginBottom: 8 }}>
+        <Pressable 
+          onPress={() => setAiModalVisible(true)}
+          style={({ pressed }) => [
+            styles.addTransactionBtn,
+            { 
+              flex: 1,
+              marginTop: 0,
+              marginBottom: 0,
+              backgroundColor: themeColors.primary,
+              borderColor: 'transparent',
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+            }
+          ]}
+        >
+          <MaterialCommunityIcons name="creation" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />
+          <Text style={[styles.addTransactionBtnText, { color: '#FFFFFF' }]}>AI Quick Add</Text>
+        </Pressable>
+
+        <Pressable 
+          onPress={() => router.push('/add-transaction')}
+          style={({ pressed }) => [
+            styles.addTransactionBtn,
+            { 
+              flex: 1,
+              marginTop: 0,
+              marginBottom: 0,
+              backgroundColor: pressed ? themeColors.surfaceHover : themeColors.surface,
+              borderColor: themeColors.border,
+              borderWidth: 1.5,
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+            }
+          ]}
+        >
+          <MaterialCommunityIcons name="plus" size={20} color={themeColors.textPrimary} style={{ marginRight: 6 }} />
+          <Text style={[styles.addTransactionBtnText, { color: themeColors.textPrimary }]}>Manual Add</Text>
+        </Pressable>
+      </View>
+
+      <AIQuickAddModal 
+        visible={aiModalVisible} 
+        onClose={() => setAiModalVisible(false)} 
+      />
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Recent Transactions</Text>

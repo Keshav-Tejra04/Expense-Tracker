@@ -219,7 +219,7 @@ export default function SettingsScreen() {
         style={styles.logoutBtn}
       />
       
-      <Text style={styles.version}>Ghar Kharch v1.0.0</Text>
+      <Text style={styles.version}>Ghar Kharch v1.1.0</Text>
     </ScrollView>
   );
 }
