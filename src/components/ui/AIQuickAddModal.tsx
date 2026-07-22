@@ -17,13 +17,6 @@ interface AIQuickAddModalProps {
   onClose: () => void;
 }
 
-const SAMPLE_PROMPTS = [
-  "School se 450 rupaye aaye",
-  "School fee 3500 online pay ki",
-  "Paid 450 cash for groceries at DMart",
-  "Doodh ke 150 rupaye online diye",
-];
-
 export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
   const { theme } = useTheme();
   const themeColors = colors[theme];
@@ -119,14 +112,13 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
       });
     } catch (error: any) {
       console.warn('[SpeechRecognition] Start error:', error);
-      Alert.alert('Voice Error', 'Speech recognition unavailable or failed to start. You can type or use your keyboard microphone.');
+      Alert.alert('Voice Error', 'Speech recognition unavailable or failed to start.');
     }
   };
 
   const handleAnalyze = async (textToParse?: string) => {
     const targetText = textToParse || input;
     if (!targetText.trim()) {
-      Alert.alert('Empty Input', 'Please speak, type, or select an expense sentence.');
       return;
     }
 
@@ -191,8 +183,8 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
         <View style={styles.card}>
           <View style={styles.header}>
             <View style={styles.headerTitleRow}>
-              <MaterialCommunityIcons name="creation" size={24} color={themeColors.primary} style={{ marginRight: 8 }} />
-              <Text style={styles.headerTitle}>AI Voice & Text Logger</Text>
+              <MaterialCommunityIcons name="microphone" size={24} color={themeColors.primary} style={{ marginRight: 8 }} />
+              <Text style={styles.headerTitle}>AI Voice Logger</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <MaterialCommunityIcons name="close" size={22} color={themeColors.textSecondary} />
@@ -200,12 +192,8 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
           </View>
 
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            <Text style={styles.subtitle}>
-              Tap the 🎙️ Mic button below to speak in English/Hinglish out loud, or type your sentence.
-            </Text>
-
-            {/* In-App Voice Mic Action Bar */}
-            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+            {/* Direct Tap to Speak Mic Action Button */}
+            <Animated.View style={{ transform: [{ scale: pulseAnim }], marginBottom: 12 }}>
               <TouchableOpacity
                 style={[
                   styles.voiceMicBtn,
@@ -215,7 +203,7 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
               >
                 <MaterialCommunityIcons 
                   name={isListening ? "microphone" : "microphone-outline"} 
-                  size={28} 
+                  size={32} 
                   color={isListening ? "#FFFFFF" : themeColors.textPrimary} 
                 />
                 <Text style={[
@@ -227,43 +215,21 @@ export function AIQuickAddModal({ visible, onClose }: AIQuickAddModalProps) {
               </TouchableOpacity>
             </Animated.View>
 
-            {/* Input box */}
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Spoken or typed text will appear here..."
-                placeholderTextColor={themeColors.textMuted}
-                value={input}
-                onChangeText={setInput}
-                multiline
-                numberOfLines={2}
-              />
-            </View>
+            {/* Spoken Text Banner */}
+            {input ? (
+              <View style={styles.spokenBanner}>
+                <MaterialCommunityIcons name="volume-high" size={16} color={themeColors.primary} style={{ marginRight: 6 }} />
+                <Text style={styles.spokenText} numberOfLines={2}>"{input}"</Text>
+              </View>
+            ) : null}
 
-            {/* Sample Chip Quick Buttons */}
-            <Text style={styles.sampleHeader}>Tap an example to try:</Text>
-            <View style={styles.chipContainer}>
-              {SAMPLE_PROMPTS.map((prompt, idx) => (
-                <TouchableOpacity 
-                  key={idx} 
-                  style={styles.chip}
-                  onPress={() => {
-                    setInput(prompt);
-                    handleAnalyze(prompt);
-                  }}
-                >
-                  <Text style={styles.chipText}>{prompt}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Analyze Button */}
-            <Button
-              title="✨ Parse with AI"
-              onPress={() => handleAnalyze()}
-              isLoading={analyzing}
-              style={{ marginTop: 16 }}
-            />
+            {/* AI Analyzing Status */}
+            {analyzing && (
+              <View style={styles.analyzingBox}>
+                <ActivityIndicator size="small" color={themeColors.primary} style={{ marginRight: 8 }} />
+                <Text style={styles.analyzingText}>AI is parsing your voice...</Text>
+              </View>
+            )}
 
             {/* Editable Parsed Result Card */}
             {parsedData && (
@@ -449,12 +415,6 @@ const getStyles = (themeColors: any, theme: string) => StyleSheet.create({
   content: {
     paddingBottom: 32,
   },
-  subtitle: {
-    fontSize: 13,
-    color: themeColors.textSecondary,
-    marginBottom: 16,
-    lineHeight: 18,
-  },
   voiceMicBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -465,7 +425,7 @@ const getStyles = (themeColors: any, theme: string) => StyleSheet.create({
     borderRadius: 100,
     paddingVertical: 14,
     paddingHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   voiceMicBtnActive: {
     backgroundColor: themeColors.expense || '#F43F5E',
@@ -477,44 +437,39 @@ const getStyles = (themeColors: any, theme: string) => StyleSheet.create({
     color: themeColors.textPrimary,
     marginLeft: 8,
   },
-  inputContainer: {
-    backgroundColor: themeColors.surfaceHover,
-    borderRadius: 16,
-    padding: 12,
-    borderWidth: 1.5,
-    borderColor: themeColors.border,
-    marginBottom: 16,
-  },
-  textInput: {
-    color: themeColors.textPrimary,
-    fontSize: 15,
-    minHeight: 50,
-    textAlignVertical: 'top',
-  },
-  sampleHeader: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: themeColors.textSecondary,
-    marginBottom: 8,
-    textTransform: 'uppercase',
-  },
-  chipContainer: {
+  spokenBanner: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
+    alignItems: 'center',
     backgroundColor: themeColors.surfaceHover,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 100,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: themeColors.border,
+    marginBottom: 12,
+  },
+  spokenText: {
+    color: themeColors.textPrimary,
+    fontSize: 13,
+    fontWeight: '600',
+    fontStyle: 'italic',
+    flex: 1,
+  },
+  analyzingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: themeColors.surfaceHover,
+    borderRadius: 14,
+    paddingVertical: 12,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: themeColors.border,
   },
-  chipText: {
-    color: themeColors.textPrimary,
-    fontSize: 12,
-    fontWeight: '600',
+  analyzingText: {
+    color: themeColors.primary,
+    fontSize: 13,
+    fontWeight: '700',
   },
   resultCard: {
     marginTop: 20,
