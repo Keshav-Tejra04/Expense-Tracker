@@ -36,22 +36,28 @@ Extract the structured details and return ONLY a valid JSON object matching this
 }
 
 CRITICAL RULES FOR TYPE DETERMINATION (Income vs Expense vs Transfer):
-1. INCOME ("Money Came In / Aaye / Mila"):
-   - Verbs & Keywords: "aaye", "aaya", "aayi", "aaye hain", "mila", "mili", "mile", "received", "got", "refund", "refunded", "credited", "salary", "kheti"
+
+1. INCOME ("Money Came In / Aaye / Mila / Someone Gave Me Money"):
+   - Structure & Verbs:
+     - "[Person] NE [amount] DIYE / BHEJA / PAY KIYA" (e.g. "dost ne 250 ruppe diye", "papa ne 5000 bheje", "rahul ne gpay kiya") -> MUST BE "income"! Category: "Gift/Received" or "Refund".
+     - "aaye", "aaya", "aayi", "mila", "mili", "mile", "received", "got", "refund", "credited", "salary", "kheti", "cashback"
    - EXAMPLES:
+     - "dost ne 250 ruppe diye cash me" -> type: "income", category: "Gift/Received"
      - "school se 450 rupye aaye" -> type: "income", category: "School Refund"
      - "dukaan se 1200 aaya" -> type: "income", category: "Business/Freelance"
      - "gpay par 500 mile" -> type: "income", category: "Refund"
-     - "cashback mila" -> type: "income", category: "Cashback"
 
-2. EXPENSE ("Money Went Out / Gaye / Diye"):
-   - Verbs & Keywords: "gaye", "gaya", "gayi", "diya", "diye", "diye hain", "di", "kharch", "kharcha", "paid", "spent", "debited", "bhara", "khareeda", "kharida"
+2. EXPENSE ("Money Went Out / Gaye / I Gave Someone"):
+   - Structure & Verbs:
+     - "MAINE [Person] KO [amount] DIYE" or "[Person] KO [amount] DIYE" -> MUST BE "expense"!
+     - "gaye", "gaya", "gayi", "diya", "diye", "diye hain", "di", "kharch", "kharcha", "paid", "spent", "debited", "bhara", "khareeda"
    - EXAMPLES:
+     - "dost ko 250 diye" -> type: "expense", category: "Other"
      - "school fee 4500 di" -> type: "expense", category: "Education/Tuition"
      - "sabzi me 300 gaye" -> type: "expense", category: "Groceries/Sabzi"
 
 3. TRANSFER ("Money Movement"):
-   - Verbs & Keywords: "transfer", "nikala", "atm", "cash to online", "online to cash"
+   - Verbs: "transfer", "nikala", "atm", "cash to online", "online to cash"
    - EXAMPLES: "5000 online se cash nikala" -> type: "transfer", category: "Transfer"
 
 Category List for Expenses: [${expenseCatNames}]
@@ -113,13 +119,16 @@ function fallbackLocalParser(text: string): ParsedAIExpense {
     amount = parseFloat(numbers[0]);
   }
 
-  // 2. Detect Type based on Hinglish verbs
+  // 2. Detect Type based on Hinglish grammar & postpositions
   let type: 'expense' | 'income' | 'transfer' = 'expense';
   
   const incomeKeywords = ['aaye', 'aaya', 'aayi', 'aaye hain', 'mila', 'mili', 'mile', 'received', 'got', 'refund', 'credited', 'salary', 'kheti', 'cashback'];
   const transferKeywords = ['transfer', 'bheja', 'nikala', 'atm'];
   
-  if (incomeKeywords.some(kw => lower.includes(kw))) {
+  // Check "person NE ... diye" pattern (Income) vs "person KO ... diye" / "maine ... diye" (Expense)
+  const containsNeDiye = /\b[a-z0-9]+\s+ne\s+.*\b(diye|diya|bheja|diye hain)\b/i.test(lower);
+  
+  if (containsNeDiye || incomeKeywords.some(kw => lower.includes(kw))) {
     type = 'income';
   } else if (transferKeywords.some(kw => lower.includes(kw))) {
     type = 'transfer';
@@ -142,7 +151,7 @@ function fallbackLocalParser(text: string): ParsedAIExpense {
       category = 'Kheti';
     } else if (lower.includes('cashback')) {
       category = 'Cashback';
-    } else if (lower.includes('gift')) {
+    } else if (lower.includes('dost') || lower.includes('friend') || lower.includes('gift') || containsNeDiye) {
       category = 'Gift/Received';
     } else {
       category = 'Refund';
