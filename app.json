@@ -45,6 +45,12 @@
         "projectId": "12760026-91fe-46ea-b838-fc55a5259b0f"
       }
     },
+    "updates": {
+      "url": "https://u.expo.dev/12760026-91fe-46ea-b838-fc55a5259b0f"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "owner": "keshav_tejra"
   }
 }

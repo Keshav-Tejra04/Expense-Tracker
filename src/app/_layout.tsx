@@ -10,6 +10,8 @@ import { View, ActivityIndicator, LogBox, AppState } from 'react-native';
 import { syncService } from '../lib/syncService';
 import { colors } from '../constants/colors';
 
+import { UpdatePromptModal } from '../components/ui/UpdatePromptModal';
+
 // Ignore specific warnings
 LogBox.ignoreLogs([
   'Invalid DOM property `transform-origin`', // from react-native-chart-kit on Web
@@ -81,6 +83,7 @@ export default function RootLayout() {
     <ThemeProvider>
       <AuthProvider>
         <InitialLayout />
+        <UpdatePromptModal />
         <StatusBar style="auto" />
       </AuthProvider>
     </ThemeProvider>
